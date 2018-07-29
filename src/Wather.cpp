@@ -13,4 +13,8 @@ Wather::~Wather(){
 
 }
 
+void Wather::doWatching(){
+
+}
+
 }
