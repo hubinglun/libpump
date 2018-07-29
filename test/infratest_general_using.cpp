@@ -25,9 +25,9 @@ void swap(char* &p, char* &q)
 }
 
 int main(){
-	int a=0,b=1;
-	int &ra =a, &rb=b;
-	swap(ra,rb);
+//	int a=0,b=1;
+//	int &ra =a, &rb=b;
+//	swap(ra,rb);
 
 	std::cout<<"a";
 }

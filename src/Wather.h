@@ -18,6 +18,7 @@ class Wather {
 public:
 	Wather();
 	~Wather();
+	void doWatching();
 private:
 	virtual void preProcess() = 0;
 	virtual int dispatch(PtrArg _IN, PtrArg _Out) = 0;
