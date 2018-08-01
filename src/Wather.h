@@ -12,6 +12,8 @@ namespace nsp_boost = ::boost;
 
 namespace PUMP{
 
+class Pump;
+
 typedef nsp_boost::weak_ptr<void> PtrArg;
 
 class Wather {

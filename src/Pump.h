@@ -110,7 +110,6 @@ private:
 	 * */
 	int watching();
 
-public:
 	/**
 	 * @brief watching()前置处理
 	 * */
@@ -119,10 +118,22 @@ public:
 private:
 	//! 存放 Wather 对象指针的数组对象
 	WatcherList m_watchers;
-	//! 回调函数邮箱
+	//! 回调函数邮箱函数执行执行接口对象
 	WPtrCbMailboxCaller m_wpMbCaller;
 	//! 标志 Pump 当前的运行状态
 	enum PumpState m_state;
+
+#ifdef __CODE_TEST
+	public:
+		size_t test_MbCaller() {
+			PtrCbMailboxCaller t_pMailCaller = m_wpMbCaller.lock();
+			if (t_pMailCaller == NULL) {
+				return 0;
+			}
+			return t_pMailCaller->runAll();
+		}
+#endif // __CODE_TEST
+
 };
 
 }

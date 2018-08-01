@@ -36,8 +36,8 @@ int Pump::postWatching(){
 	if(t_pMailCaller==NULL){
 		return 0;
 	}
-	t_pMailCaller->runAll();
-	return 0;
+	size_t n = t_pMailCaller->runAll();
+	return n;
 }
 
 void Pump::init(){

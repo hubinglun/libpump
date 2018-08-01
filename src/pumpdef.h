@@ -8,6 +8,10 @@
 
 namespace PUMP{
 
+#define PUMP_ABSTRACT 	/** 修饰抽象类 */
+#define PUMP_INTERFACE	/** 修饰接口类 */
+#define PUMP_IMPLEMENT	/** 修饰实现类 */
+
 /** 事件优先级的数值类型, 与 enum EventPriority 对应 */
 typedef unsigned short ev_prior_t;
 
