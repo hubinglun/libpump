@@ -1,16 +1,21 @@
-//
-// Created by yz on 18-7-29.
-//
+/**
+ * @file pumpdef.h
+ * @brief 定义 libpump 库的全局类型, 将来可能拆分成多个文件
+ *
+ * @author YangZheng 263693992@qq.com
+ * @version 1.0
+ * @date 2018.07.29
+ */
 #pragma once
 
 #ifndef LIBPUMP_PUMPDEF_H
 #define LIBPUMP_PUMPDEF_H
 
-namespace PUMP{
+namespace PUMP {
 
-#define PUMP_ABSTRACT 	/** 修饰抽象类 */
-#define PUMP_INTERFACE	/** 修饰接口类 */
-#define PUMP_IMPLEMENT	/** 修饰实现类 */
+#define PUMP_ABSTRACT  /** 修饰抽象类 */
+#define PUMP_INTERFACE  /** 修饰接口类 */
+#define PUMP_IMPLEMENT  /** 修饰实现类 */
 
 /** 事件优先级的数值类型, 与 enum EventPriority 对应 */
 typedef unsigned short ev_prior_t;
@@ -18,11 +23,11 @@ typedef unsigned short ev_prior_t;
 /** 枚举常量
  *
  * 定义了事件对象 Event 优先级, 从上往下优先级由高到低*/
-enum EventPriority{
-	EVPRIOR_LEVEL0 = 0,	//! 最高优先级
-	EVPRIOR_LEVEL1,			//! 次高优先级
-	EVPRIOR_LEVEL2,			//! 最低优先级
-	EVPRIOR_DEFAULT,		//! 默认优先级, 即最低
+enum EventPriority {
+  EVPRIOR_LEVEL0 = 0,  //! 最高优先级
+  EVPRIOR_LEVEL1,      //! 次高优先级
+  EVPRIOR_LEVEL2,      //! 最低优先级
+  EVPRIOR_DEFAULT,    //! 默认优先级, 即最低
 };
 
 /** 枚举常量
@@ -38,11 +43,11 @@ enum EventPriority{
  * EVSTATE_REGISTERED <-> EVSTATE_ACTIVE
  * EVSTATE_ACTIVE -> EVSTATE_SOLVED -> EVSTATE_REGISTERED
  * */
-enum EventState{
-	EVSTATE_INIT,				//! 初始化态
-	EVSTATE_REGISTERED,	//! 注册态
-	EVSTATE_ACTIVE, 		//! 激活态
-	EVSTATE_SOLVED, 		//! 已处理态
+enum EventState {
+  EVSTATE_INIT,        //! 初始化态
+  EVSTATE_REGISTERED,  //! 注册态
+  EVSTATE_ACTIVE,    //! 激活态
+  EVSTATE_SOLVED,    //! 已处理态
 };
 
 /** 枚举常量
@@ -52,10 +57,10 @@ enum EventState{
  * > EVTYPE_NORM 普通事件, 加入到 Watcher 的 NormEventsList 中在每一轮 dispatch() 中检测并激活
  * > EVTYPE_POST 事后事件, 加入到 Watcher 的 PostEventsList 中在每一轮 postProcess() 中被执行
  * */
-enum EventType{
-	EVTYPE_PRE,   //! 事前事件
-	EVTYPE_NORM,  //! 普通事件
-	EVTYPE_POST,  //! 事后事件
+enum EventType {
+  EVTYPE_PRE,   //! 事前事件
+  EVTYPE_NORM,  //! 普通事件
+  EVTYPE_POST,  //! 事后事件
 };
 
 /** 枚举常量
@@ -74,12 +79,12 @@ enum EventType{
  * PUMPSTATE_INIT -> PUMPSTATE_PAUSE
  * PUMPSTATE_STOP <-> PUMPSTATE_START <-> PUMPSTATE_PAUSE
  * */
-enum PumpState{
-	PUMPSTATE_NEW,		//! 新建态
-	PUMPSTATE_INIT, 	//! 初始化态
-	PUMPSTATE_STOP,		//! 终止态
-	PUMPSTATE_START,	//! 运行态
-	PUMPSTATE_PAUSE,	//! 挂起态
+enum PumpState {
+  PUMPSTATE_NEW,    //! 新建态
+  PUMPSTATE_INIT,  //! 初始化态
+  PUMPSTATE_STOP,    //! 终止态
+  PUMPSTATE_START,  //! 运行态
+  PUMPSTATE_PAUSE,  //! 挂起态
 };
 
 }
