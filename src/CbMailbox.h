@@ -61,7 +61,7 @@ public:
    *
    * @brief 判断回调对象是否具有返回值
    * @return true 表示有返回值
-   * */
+  */
   inline bool isReturnAValue() const { return m_bReturn; }
   
   /**
@@ -71,7 +71,7 @@ public:
    *
    * 每一个派生于 CbFn 对象的回调都必须实现, 是CbFn作为
    * 函数对象的证明, 也是调用接口
-   * */
+   */
   virtual void operator()() = 0;
 
 private:
@@ -79,7 +79,7 @@ private:
    * @var bool m_bReturn
    *
    * 标记回调对象是否有返回值, 定义对象时确定
-   * */
+   */
   const bool m_bReturn;
 };
 
@@ -112,16 +112,18 @@ public:
   ~CbFnWithReturn() {}
 };
 
-/** 指向 CbFn 对象的指针
+/**
+ * @typedef 指向 CbFn 对象的指针
  *
- * 定义本指针目的在于加入 list<PrtCbFn> 实现回调函数的托管
- * */
+ * @brief 定义本指针目的在于加入 list<PrtCbFn> 实现回调函数的托管
+ */
 typedef nsp_boost::shared_ptr<CbFn> PrtCbFn;
 
-/**　class CbFnContainerManager [CbMailbox.h]
+/**　
+ * @class CbFnContainerManager [CbMailbox.h]
  *
- * 回调函数容器的管理接口, 增删改
- * */
+ * @brief 回调函数容器的管理接口, 增删改
+ */
 PUMP_INTERFACE
 class CbFnContainerManager
   : virtual public nsp_boost::noncopyable {
@@ -130,18 +132,21 @@ public:
   
   virtual ~CbFnContainerManager() {}
   
-  /** 向 m_pRevLFns 尾插入一个回调对象
+  /**
+   * @fn virtual bool insert(PrtCbFn pfn) = 0
+   * @brief 向 m_pRevLFns 尾插入一个回调对象
    *
    * @param[in] pfn 要插入链表的回调对象(注：由于回调对象会被修改,禁止将参数声明为const)
    * @return 插入成功返回true
-   * */
+   */
   virtual bool insert(PrtCbFn pfn) = 0;
 };
 
-/**　class CbFnContainerCaller [CbMailbox.h]
+/**
+ * @class CbFnContainerCaller [CbMailbox.h]
  *
- * 回调函数容器的执行接口
- **/
+ * @brief 回调函数容器的执行接口
+ */
 PUMP_INTERFACE
 class CbFnContainerCaller
   : virtual public nsp_boost::noncopyable {
@@ -150,18 +155,21 @@ public:
   
   virtual ~CbFnContainerCaller() {}
   
-  /** 遍历链表 m_pRunLFns 执行其中回调对象
+  /**
+   * @fn virtual size_t runAll() = 0
+   * @brief 遍历链表 m_pRunLFns 执行其中回调对象
    *
    * @return 返回执行的回调对象数量
-   **/
+   */
   virtual size_t runAll() = 0;
 };
 
-/** class CbFnContainer [CbMailbox.h]
+/**
+ * @class CbFnContainer [CbMailbox.h]
  *
- * 存放回调函数容器接口类
+ * @brief 存放回调函数容器接口类
  * 必须实现接口,并且配上真正的容器存储对象,才是完整的回调函数容器
- * */
+ */
 PUMP_INTERFACE
 class CbFnContainer
   : public CbFnContainerCaller,
@@ -172,11 +180,12 @@ public:
   virtual ~CbFnContainer() {}
 };
 
-/** class CbFnList [CbMailbox.h]
+/**
+ * @class CbFnList [CbMailbox.h]
  *
- * 回调函数链表,回调对象的托管对象.在优先级队列中存放某一个优先级下的所有函数对象
+ * @brief 回调函数链表,回调对象的托管对象.在优先级队列中存放某一个优先级下的所有函数对象
  * 接收任意参数类型, 个数及返回值类型的回调函数对象.
- **/
+ */
 PUMP_IMPLEMENT
 class CbFnList
   : public CbFnContainer {
@@ -185,51 +194,71 @@ public:
   
   ~CbFnList();
   
-  /** 向 m_pRevLFns 尾插入一个回调对象
+  /**
+   * @fn bool insert(PrtCbFn pfn)
+   * @brief 向 m_pRevLFns 尾插入一个回调对象
    *
    * @param[in] pfn 要插入链表的回调对象(注：由于回调对象会被修改,禁止将参数声明为const)
    * @return 插入成功返回true
-   * */
+   */
   bool insert(PrtCbFn pfn);
   
-  /** 遍历链表 m_pRunLFns 执行其中回调对象
+  /**
+   * @fn size_t runAll()
+   * @brief遍历链表 m_pRunLFns 执行其中回调对象
    *
    * @return 返回执行的回调对象数量
-   * */
+   */
   size_t runAll();
 
 private:
-  /** 交换 m_rRevLFns 与 m_rRunLFns
+  /**
+   * @fn void swapLRef()
+   * @brief 交换 m_rRevLFns 与 m_rRunLFns
    *
    * 意味着 m_rRunLFns 内的回调函数执行完成.
    * 本函数仅限于再 runAll() 中调用.
-   * */
+   */
   void swapLRef();
   
-  /** 请求对 m_mtxRevLFns 加锁 */
+  /**
+   * @fn bool lockRevLFns()
+   * @brief 请求对 m_mtxRevLFns 加锁
+   */
   bool lockRevLFns();
   
-  /** 请求对 m_mtxRevLFns 释放锁 */
+  /**
+   * @fn bool unlockRevLFns()
+   * @brief 请求对 m_mtxRevLFns 释放锁
+   */
   bool unlockRevLFns();
 
 private:
-  /**< 访问 m_pRevLFns 函数链表的互斥量 */
+  /**
+   * @var nsp_boost::mutex m_mtxRevLFns
+   * @brief 访问 m_pRevLFns 函数链表的互斥量
+   */
   nsp_boost::mutex m_mtxRevLFns;
   
-  /** 函数链表使用双缓冲机制,同一时间一个链表用于遍历执行,另一个用于接收新回调函数
+  /**
+   * @addtogroup list_CbFn
    *
+   * @brief 函数链表使用双缓冲机制,同一时间一个链表用于遍历执行,另一个用于接收新回调函数
    * 这样设计的目的是, 若 Pump 对象和 Watcher 对象工作在不同线程, 即IO与CPU计算分离后,
-   * 双缓冲提高并发性和吞吐量, 且避免出现竞态条件 */
+   * 双缓冲提高并发性和吞吐量, 且避免出现竞态条件
+   * @{
+   */
   std::list<PrtCbFn> m_lFns_0;
   std::list<PrtCbFn> m_lFns_1;
   std::list<PrtCbFn> *m_pRevLFns;
   std::list<PrtCbFn> *m_pRunLFns;
+  /** @}*/
 };
 
-/**　class CbFnContainerManager [CbMailbox.h]
- *
- * 回调函数容器的管理接口, 增删改
- * */
+/**　
+ * @class CbFnContainerManager [CbMailbox.h]
+ * @brief 回调函数容器的管理接口, 增删改
+ */
 PUMP_INTERFACE
 class CbMailboxManager
   : virtual public nsp_boost::noncopyable {
@@ -238,19 +267,20 @@ public:
   
   virtual ~CbMailboxManager() {}
   
-  /** 向 m_pRevLFns 尾插入一个回调对象
-   *
+  /**
+   * @fn virtual bool insert(ev_prior_t prior, PrtCbFn pfn) = 0
+   * @brief 向 m_pRevLFns 尾插入一个回调对象
    * @param[in] prior 回调函数的优先级, 决定放入的容器
    * @param[in] pfn 要放入邮箱的回调对象(注：由于回调对象会被修改,禁止将参数声明为const)
    * @return 插入成功返回true
-   * */
+   */
   virtual bool insert(ev_prior_t prior, PrtCbFn pfn) = 0;
 };
 
-/**　class CbFnContainerCaller [CbMailbox.h]
- *
- * 回调函数容器的执行接口
- **/
+/**　
+ * @class CbFnContainerCaller [CbMailbox.h]
+ * @brief 回调函数容器的执行接口
+ */
 PUMP_INTERFACE
 class CbMailboxCaller
   : virtual public nsp_boost::noncopyable {
@@ -259,10 +289,11 @@ public:
   
   virtual ~CbMailboxCaller() {}
   
-  /** 遍历链表 m_pRunLFns 执行其中回调对象
-   *
+  /**
+   * @fn 遍历链表 m_pRunLFns 执行其中回调对象
+   * @brief virtual size_t runAll() = 0
    * @return 返回执行的回调对象数量
-   **/
+   */
   virtual size_t runAll() = 0;
 };
 
@@ -271,22 +302,24 @@ typedef nsp_boost::shared_ptr<CbMailboxCaller> PtrCbMailboxCaller;
 typedef nsp_boost::weak_ptr<CbMailboxManager> WPtrCbMailboxManager;
 typedef nsp_boost::shared_ptr<CbMailboxManager> PtrCbMailboxManager;
 
-/** class CbFnContainer [CbMailbox.h]
+/** @class CbFnContainer [CbMailbox.h]
+ * @brief 存放回调函数容器接口类
  *
- * 存放回调函数容器接口类
  * 必须实现接口,并且配上真正的容器存储对象,才是完整的回调函数容器
- * */
+ */
 PUMP_INTERFACE
 class CbMailbox
   : public CbMailboxCaller,
     public CbMailboxManager {
 public:
   
-  /** 回调优先级队列元素类型
+  /**
+   * @typedef typedef nsp_boost::shared_ptr<CbFnContainer> PtrCbFnContainer
+   * @brief 回调优先级队列元素类型
    *
    * 优先级队列中存放智能指针的好处是内存托管, 另外也因为 CbFnList 是不允许拷贝的,
    * 不符合STL元素对象标准
-   * */
+   */
   typedef nsp_boost::shared_ptr<CbFnContainer> PtrCbFnContainer;
   
   CbMailbox() {}
@@ -297,37 +330,42 @@ public:
 typedef nsp_boost::weak_ptr<CbMailbox> WPtrCbMailbox;
 typedef nsp_boost::shared_ptr<CbMailbox> PtrCbMailbox;
 
-/** class CbMailbox [CbMailbox.h]
- *
- * 回调函数邮箱类, 负责调度回调函数
- * */
+/**
+ * @class CbMailbox [CbMailbox.h]
+ * @brief 回调函数邮箱类, 负责调度回调函数
+ */
 PUMP_ABSTRACT
 class CbQueueMailbox
   : public CbMailbox {
 public:
   
-  /** 回调优先级队列对象
+  /**
+   * @def  typedef nsp_std::map<ev_prior_t, CbMailbox::PtrCbFnContainer> CbPriorQueue
+   * @brief 回调优先级队列对象
    *
-   * 由 map 容器实现
-   *  map key 值为枚举类型 EventPriority
-   *  value 值为回调链表的智能指针
-   * */
+   * - 由 map 容器实现
+   *    -# map key 值为枚举类型 EventPriority
+   *    -# value 值为回调链表的智能指针
+   */
   typedef nsp_std::map<ev_prior_t, CbMailbox::PtrCbFnContainer> CbPriorQueue;
   
   CbQueueMailbox();
   
   ~CbQueueMailbox();
   
-  /** 向优先级队列插入一个回调对象
-   *
+  /**
+   * @fn bool insert(ev_prior_t prior, PrtCbFn pFn)
+   * @brief 向优先级队列插入一个回调对象
    * @param prior 回调对象的优先级
    * @param pFn 回调对象
-   *
-   * */
+   */
   bool insert(ev_prior_t prior, PrtCbFn pFn);
   
-  /**  按优先级遍历各级函数链表, 执行回调
-   * */
+  /**
+   * @fn size_t runAll()
+   * @brief 按优先级遍历各级函数链表, 执行回调
+   * @return 执行的函数对象数量
+   */
   size_t runAll();
 
 private:
@@ -336,14 +374,14 @@ private:
   void disposeCbPriorQueue();
 
 private:
-  //! 回调优先级队列
+  /**< 回调优先级队列*/
   CbPriorQueue m_queCb;
 };
 
-/**　class CbFnContainerManager [CbMailbox.h]
- *
- * 回调函数容器的管理接口, 增删改
- * */
+/**
+ * @class CbFnContainerManager [CbMailbox.h]
+ * @brief 回调函数容器的管理接口, 增删改
+ */
 PUMP_IMPLEMENT
 class ICbMailboxManager
   : virtual public CbMailboxManager {
@@ -352,22 +390,23 @@ public:
   
   virtual ~ICbMailboxManager();
   
-  /** 向 m_pRevLFns 尾插入一个回调对象
-   *
-   * @param[in] prior 回调函数的优先级, 决定放入的容器
-   * @param[in] pfn 要放入邮箱的回调对象(注：由于回调对象会被修改,禁止将参数声明为const)
+  /**
+   * @fn bool insert(ev_prior_t prior, PrtCbFn pfn)
+   * @brief 向 m_pRevLFns 尾插入一个回调对象
+   * @param [in] prior 回调函数的优先级, 决定放入的容器
+   * @param [in] pfn 要放入邮箱的回调对象(注：由于回调对象会被修改,禁止将参数声明为const)
    * @return 插入成功返回true
-   * */
+   */
   bool insert(ev_prior_t prior, PrtCbFn pfn);
 
 private:
   nsp_boost::weak_ptr<CbMailbox> m_pMailbox;
 };
 
-/**　class CbFnContainerCaller [CbMailbox.h]
- *
- * 回调函数容器的执行接口
- * */
+/** 
+ * @class CbFnContainerCaller [CbMailbox.h]
+ * @brief 回调函数容器的执行接口
+ */
 PUMP_IMPLEMENT
 class ICbMailboxCaller
   : public CbMailboxCaller {
@@ -376,10 +415,11 @@ public:
   
   virtual ~ICbMailboxCaller();
   
-  /** 遍历链表 m_pRunLFns 执行其中回调对象
-   *
-    * @return 返回执行的回调对象数量
-    * */
+  /**
+   * @fn size_t runAll()
+   * @brief 遍历链表 m_pRunLFns 执行其中回调对象
+   * @return 返回执行的回调对象数量
+   */
   size_t runAll();
 
 private:
