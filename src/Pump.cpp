@@ -14,8 +14,8 @@ namespace PUMP {
 //                   Pump
 ////////////////////////////////////////////////
 
-Pump::Pump(WPtrCbMailboxCaller pMbCaller)
-  : m_wpMbCaller(pMbCaller) {
+Pump::Pump(WPtrICbMailboxEvoker pMbEvoker)
+  : m_wpMbEvoker(pMbEvoker) {
 }
 
 Pump::~Pump() {}
@@ -36,11 +36,11 @@ int Pump::watching() {
 
 int Pump::postWatching() {
   // 目前 postWatching 仅安排执行回调
-  PtrCbMailboxCaller t_pMailCaller = m_wpMbCaller.lock();
-  if (t_pMailCaller == NULL) {
+  PtrICbMailboxEvoker t_pMailEvoker = m_wpMbEvoker.lock();
+  if (t_pMailEvoker == NULL) {
     return 0;
   }
-  size_t n = t_pMailCaller->runAll();
+  size_t n = t_pMailEvoker->runAll();
   return n;
 }
 

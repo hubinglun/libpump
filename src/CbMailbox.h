@@ -115,45 +115,45 @@ public:
 /**
  * @typedef 指向 CbFn 对象的指针
  *
- * @brief 定义本指针目的在于加入 list<PrtCbFn> 实现回调函数的托管
+ * @brief 定义本指针目的在于加入 list<PtrCbFn> 实现回调函数的托管
  */
-typedef nsp_boost::shared_ptr<CbFn> PrtCbFn;
+typedef nsp_boost::shared_ptr<CbFn> PtrCbFn;
 
 /**　
- * @class CbFnContainerManager [CbMailbox.h]
+ * @class CbContainerMgr [CbMailbox.h]
  *
  * @brief 回调函数容器的管理接口, 增删改
  */
 PUMP_INTERFACE
-class CbFnContainerManager
+class CbContainerMgr
   : virtual public nsp_boost::noncopyable {
 public:
-  CbFnContainerManager() {}
+  CbContainerMgr() {}
   
-  virtual ~CbFnContainerManager() {}
+  virtual ~CbContainerMgr() {}
   
   /**
-   * @fn virtual bool insert(PrtCbFn pfn) = 0
+   * @fn virtual bool insert(PtrCbFn pfn) = 0
    * @brief 向 m_pRevLFns 尾插入一个回调对象
    *
    * @param[in] pfn 要插入链表的回调对象(注：由于回调对象会被修改,禁止将参数声明为const)
    * @return 插入成功返回true
    */
-  virtual bool insert(PrtCbFn pfn) = 0;
+  virtual bool insert(PtrCbFn pfn) = 0;
 };
 
 /**
- * @class CbFnContainerCaller [CbMailbox.h]
+ * @class CbContainerEvoker [CbMailbox.h]
  *
  * @brief 回调函数容器的执行接口
  */
 PUMP_INTERFACE
-class CbFnContainerCaller
+class CbContainerEvoker
   : virtual public nsp_boost::noncopyable {
 public:
-  CbFnContainerCaller() {}
+  CbContainerEvoker() {}
   
-  virtual ~CbFnContainerCaller() {}
+  virtual ~CbContainerEvoker() {}
   
   /**
    * @fn virtual size_t runAll() = 0
@@ -165,43 +165,43 @@ public:
 };
 
 /**
- * @class CbFnContainer [CbMailbox.h]
+ * @class CbContainer [CbMailbox.h]
  *
  * @brief 存放回调函数容器接口类
  * 必须实现接口,并且配上真正的容器存储对象,才是完整的回调函数容器
  */
 PUMP_INTERFACE
-class CbFnContainer
-  : public CbFnContainerCaller,
-    public CbFnContainerManager {
+class CbContainer
+  : public CbContainerEvoker,
+    public CbContainerMgr {
 public:
-  CbFnContainer() {}
+  CbContainer() {}
   
-  virtual ~CbFnContainer() {}
+  virtual ~CbContainer() {}
 };
 
 /**
- * @class CbFnList [CbMailbox.h]
+ * @class CbList [CbMailbox.h]
  *
  * @brief 回调函数链表,回调对象的托管对象.在优先级队列中存放某一个优先级下的所有函数对象
  * 接收任意参数类型, 个数及返回值类型的回调函数对象.
  */
 PUMP_IMPLEMENT
-class CbFnList
-  : public CbFnContainer {
+class CbList
+  : public CbContainer {
 public:
-  CbFnList();
+  CbList();
   
-  ~CbFnList();
+  ~CbList();
   
   /**
-   * @fn bool insert(PrtCbFn pfn)
+   * @fn bool insert(PtrCbFn pfn)
    * @brief 向 m_pRevLFns 尾插入一个回调对象
    *
    * @param[in] pfn 要插入链表的回调对象(注：由于回调对象会被修改,禁止将参数声明为const)
    * @return 插入成功返回true
    */
-  bool insert(PrtCbFn pfn);
+  bool insert(PtrCbFn pfn);
   
   /**
    * @fn size_t runAll()
@@ -248,46 +248,46 @@ private:
    * 双缓冲提高并发性和吞吐量, 且避免出现竞态条件
    * @{
    */
-  std::list<PrtCbFn> m_lFns_0;
-  std::list<PrtCbFn> m_lFns_1;
-  std::list<PrtCbFn> *m_pRevLFns;
-  std::list<PrtCbFn> *m_pRunLFns;
+  std::list<PtrCbFn> m_lFns_0;
+  std::list<PtrCbFn> m_lFns_1;
+  std::list<PtrCbFn> *m_pRevLFns;
+  std::list<PtrCbFn> *m_pRunLFns;
   /** @}*/
 };
 
 /**　
- * @class CbFnContainerManager [CbMailbox.h]
+ * @class CbContainerMgr [CbMailbox.h]
  * @brief 回调函数容器的管理接口, 增删改
  */
 PUMP_INTERFACE
-class CbMailboxManager
+class CbMailboxMgr
   : virtual public nsp_boost::noncopyable {
 public:
-  CbMailboxManager() {}
+  CbMailboxMgr() {}
   
-  virtual ~CbMailboxManager() {}
+  virtual ~CbMailboxMgr() {}
   
   /**
-   * @fn virtual bool insert(ev_prior_t prior, PrtCbFn pfn) = 0
+   * @fn virtual bool insert(ev_prior_t prior, PtrCbFn pfn) = 0
    * @brief 向 m_pRevLFns 尾插入一个回调对象
    * @param[in] prior 回调函数的优先级, 决定放入的容器
    * @param[in] pfn 要放入邮箱的回调对象(注：由于回调对象会被修改,禁止将参数声明为const)
    * @return 插入成功返回true
    */
-  virtual bool insert(ev_prior_t prior, PrtCbFn pfn) = 0;
+  virtual bool insert(ev_prior_t prior, PtrCbFn pfn) = 0;
 };
 
 /**　
- * @class CbFnContainerCaller [CbMailbox.h]
+ * @class CbContainerEvoker [CbMailbox.h]
  * @brief 回调函数容器的执行接口
  */
 PUMP_INTERFACE
-class CbMailboxCaller
+class CbMailboxEvoker
   : virtual public nsp_boost::noncopyable {
 public:
-  CbMailboxCaller() {}
+  CbMailboxEvoker() {}
   
-  virtual ~CbMailboxCaller() {}
+  virtual ~CbMailboxEvoker() {}
   
   /**
    * @fn 遍历链表 m_pRunLFns 执行其中回调对象
@@ -297,30 +297,30 @@ public:
   virtual size_t runAll() = 0;
 };
 
-typedef nsp_boost::weak_ptr<CbMailboxCaller> WPtrCbMailboxCaller;
-typedef nsp_boost::shared_ptr<CbMailboxCaller> PtrCbMailboxCaller;
-typedef nsp_boost::weak_ptr<CbMailboxManager> WPtrCbMailboxManager;
-typedef nsp_boost::shared_ptr<CbMailboxManager> PtrCbMailboxManager;
+typedef nsp_boost::weak_ptr<CbMailboxEvoker> WPtrCbMailboxEvoker;
+typedef nsp_boost::shared_ptr<CbMailboxEvoker> PtrCbMailboxEvoker;
+typedef nsp_boost::weak_ptr<CbMailboxMgr> WPtrCbMailboxMgr;
+typedef nsp_boost::shared_ptr<CbMailboxMgr> PtrCbMailboxMgr;
 
-/** @class CbFnContainer [CbMailbox.h]
+/** @class CbContainer [CbMailbox.h]
  * @brief 存放回调函数容器接口类
  *
  * 必须实现接口,并且配上真正的容器存储对象,才是完整的回调函数容器
  */
 PUMP_INTERFACE
 class CbMailbox
-  : public CbMailboxCaller,
-    public CbMailboxManager {
+  : public CbMailboxEvoker,
+    public CbMailboxMgr {
 public:
   
   /**
-   * @typedef typedef nsp_boost::shared_ptr<CbFnContainer> PtrCbFnContainer
+   * @typedef typedef nsp_boost::shared_ptr<CbContainer> PtrCbFnContainer
    * @brief 回调优先级队列元素类型
    *
-   * 优先级队列中存放智能指针的好处是内存托管, 另外也因为 CbFnList 是不允许拷贝的,
+   * 优先级队列中存放智能指针的好处是内存托管, 另外也因为 CbList 是不允许拷贝的,
    * 不符合STL元素对象标准
    */
-  typedef nsp_boost::shared_ptr<CbFnContainer> PtrCbFnContainer;
+  typedef nsp_boost::shared_ptr<CbContainer> PtrCbFnContainer;
   
   CbMailbox() {}
   
@@ -354,12 +354,12 @@ public:
   ~CbQueueMailbox();
   
   /**
-   * @fn bool insert(ev_prior_t prior, PrtCbFn pFn)
+   * @fn bool insert(ev_prior_t prior, PtrCbFn pFn)
    * @brief 向优先级队列插入一个回调对象
    * @param prior 回调对象的优先级
    * @param pFn 回调对象
    */
-  bool insert(ev_prior_t prior, PrtCbFn pFn);
+  bool insert(ev_prior_t prior, PtrCbFn pFn);
   
   /**
    * @fn size_t runAll()
@@ -379,41 +379,41 @@ private:
 };
 
 /**
- * @class CbFnContainerManager [CbMailbox.h]
+ * @class CbContainerMgr [CbMailbox.h]
  * @brief 回调函数容器的管理接口, 增删改
  */
 PUMP_IMPLEMENT
-class ICbMailboxManager
-  : virtual public CbMailboxManager {
+class ICbMailboxMgr
+  : virtual public CbMailboxMgr {
 public:
-  explicit ICbMailboxManager(nsp_boost::weak_ptr<CbMailbox> pMailbox);
+  explicit ICbMailboxMgr(nsp_boost::weak_ptr<CbMailbox> pMailbox);
   
-  virtual ~ICbMailboxManager();
+  virtual ~ICbMailboxMgr();
   
   /**
-   * @fn bool insert(ev_prior_t prior, PrtCbFn pfn)
+   * @fn bool insert(ev_prior_t prior, PtrCbFn pfn)
    * @brief 向 m_pRevLFns 尾插入一个回调对象
    * @param [in] prior 回调函数的优先级, 决定放入的容器
    * @param [in] pfn 要放入邮箱的回调对象(注：由于回调对象会被修改,禁止将参数声明为const)
    * @return 插入成功返回true
    */
-  bool insert(ev_prior_t prior, PrtCbFn pfn);
+  bool insert(ev_prior_t prior, PtrCbFn pfn);
 
 private:
-  nsp_boost::weak_ptr<CbMailbox> m_pMailbox;
+  WPtrCbMailbox m_pMailbox;
 };
 
 /** 
- * @class CbFnContainerCaller [CbMailbox.h]
+ * @class CbContainerEvoker [CbMailbox.h]
  * @brief 回调函数容器的执行接口
  */
 PUMP_IMPLEMENT
-class ICbMailboxCaller
-  : public CbMailboxCaller {
+class ICbMailboxEvoker
+  : public CbMailboxEvoker {
 public:
-  explicit ICbMailboxCaller(nsp_boost::weak_ptr<CbMailbox> pMailbox);
+  ICbMailboxEvoker(WPtrCbMailbox pMailbox);
   
-  virtual ~ICbMailboxCaller();
+  virtual ~ICbMailboxEvoker();
   
   /**
    * @fn size_t runAll()
@@ -423,8 +423,13 @@ public:
   size_t runAll();
 
 private:
-  nsp_boost::weak_ptr<CbMailbox> m_pMailbox;
+  WPtrCbMailbox m_pMailbox;
 };
+
+typedef nsp_boost::weak_ptr<ICbMailboxEvoker> WPtrICbMailboxEvoker;
+typedef nsp_boost::shared_ptr<ICbMailboxEvoker> PtrICbMailboxEvoker;
+typedef nsp_boost::weak_ptr<ICbMailboxMgr> WPtrICbMailboxMgr;
+typedef nsp_boost::shared_ptr<ICbMailboxMgr> PtrICbMailboxMgr;
 
 }
 

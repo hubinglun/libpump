@@ -7,29 +7,29 @@
 namespace PUMP{
 
 ////////////////////////////////////////////////
-//                 CbFnList
+//                 CbList
 ////////////////////////////////////////////////
 
-CbFnList::CbFnList()
+CbList::CbList()
   : m_pRevLFns(&m_lFns_0),
     m_pRunLFns(&m_lFns_1) {
 }
 
-CbFnList::~CbFnList(){
+CbList::~CbList(){
 
 }
 
-bool CbFnList::insert(PrtCbFn pfn){
+bool CbList::insert(PtrCbFn pfn){
   m_pRevLFns->push_back(pfn);
 }
 
-size_t CbFnList::runAll(){
+size_t CbList::runAll(){
   if(m_pRunLFns->empty()){
     // (双缓冲) 交换 m_pRevLFns 与 m_pRunLFns
     swapLRef();
   }
   size_t t_iN = m_pRunLFns->size();
-  for(nsp_std::list<PrtCbFn>::iterator it = m_pRunLFns->begin();
+  for(nsp_std::list<PtrCbFn>::iterator it = m_pRunLFns->begin();
       it!=m_pRunLFns->end();
       it++){
     (*(*it))();
@@ -40,8 +40,8 @@ size_t CbFnList::runAll(){
   return t_iN;
 }
 
-void CbFnList::swapLRef(){
-  std::list<PrtCbFn> * t_pRun = m_pRunLFns;
+void CbList::swapLRef(){
+  std::list<PtrCbFn> * t_pRun = m_pRunLFns;
   
   // 加锁, 不允许其他线程再向“前” m_pRevLFns 插入回调
   lockRevLFns();
@@ -50,12 +50,12 @@ void CbFnList::swapLRef(){
   unlockRevLFns();
 }
 
-bool CbFnList::lockRevLFns(){
+bool CbList::lockRevLFns(){
   m_mtxRevLFns.lock();
   return true;
 }
 
-bool CbFnList::unlockRevLFns(){
+bool CbList::unlockRevLFns(){
   m_mtxRevLFns.unlock();
   return true;
 }
@@ -72,7 +72,7 @@ CbQueueMailbox::~CbQueueMailbox(){
   disposeCbPriorQueue();
 }
 
-bool CbQueueMailbox::insert(ev_prior_t prior, PrtCbFn pfn){
+bool CbQueueMailbox::insert(ev_prior_t prior, PtrCbFn pfn){
   CbPriorQueue::iterator it;
   
   if(prior == EVPRIOR_DEFAULT) {
@@ -109,8 +109,8 @@ void CbQueueMailbox::initCbPriorQueue() {
        i < EVPRIOR_DEFAULT;
        ++i) {
     // 按照优先级标准, 构造优先级队列
-//		m_queCb.insert(nsp_std::pair<ev_prior_t, PtrCbFnContainer>(i,nsp_boost::make_shared<CbFnList>()));
-    m_queCb.insert(nsp_std::make_pair(i, nsp_boost::make_shared<CbFnList>()));
+//		m_queCb.insert(nsp_std::pair<ev_prior_t, PtrCbFnContainer>(i,nsp_boost::make_shared<CbList>()));
+    m_queCb.insert(nsp_std::make_pair(i, nsp_boost::make_shared<CbList>()));
   }
 }
 
@@ -119,19 +119,19 @@ void CbQueueMailbox::disposeCbPriorQueue(){
 }
 
 ////////////////////////////////////////////////
-//            ICbMailboxManager
+//            ICbMailboxMgr
 ////////////////////////////////////////////////
 
-ICbMailboxManager::
-ICbMailboxManager(nsp_boost::weak_ptr<CbMailbox> pMailbox )
+ICbMailboxMgr::
+ICbMailboxMgr(nsp_boost::weak_ptr<CbMailbox> pMailbox )
   : m_pMailbox(pMailbox){}
 
-ICbMailboxManager::
-~ICbMailboxManager(){}
+ICbMailboxMgr::
+~ICbMailboxMgr(){}
 
 bool
-ICbMailboxManager::
-insert(ev_prior_t prior, PrtCbFn pfn) {
+ICbMailboxMgr::
+insert(ev_prior_t prior, PtrCbFn pfn) {
   nsp_boost::shared_ptr<CbMailbox> p_tMailbox = m_pMailbox.lock();
   if (p_tMailbox == NULL) {
     return false;
@@ -140,18 +140,18 @@ insert(ev_prior_t prior, PrtCbFn pfn) {
 }
 
 ////////////////////////////////////////////////
-//            ICbMailboxCaller
+//            ICbMailboxEvoker
 ////////////////////////////////////////////////
 
-ICbMailboxCaller::
-ICbMailboxCaller(nsp_boost::weak_ptr<CbMailbox> pMailbox)
+ICbMailboxEvoker::
+ICbMailboxEvoker(WPtrCbMailbox pMailbox)
   : m_pMailbox(pMailbox){}
 
-ICbMailboxCaller::
-~ICbMailboxCaller(){}
+ICbMailboxEvoker::
+~ICbMailboxEvoker(){}
 
 size_t
-ICbMailboxCaller::
+ICbMailboxEvoker::
 runAll() {
   nsp_boost::shared_ptr<CbMailbox> p_tMailbox = m_pMailbox.lock();
   if (p_tMailbox == NULL) {

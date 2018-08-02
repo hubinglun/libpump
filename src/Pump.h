@@ -26,8 +26,8 @@ namespace nsp_std = ::std;
 namespace nsp_boost = ::boost;
 
 /**
- * @brief PUMP
- * 命名空间的详细概述
+ * @namespace namespace PUMP
+ * @brief libpump 的顶级命名空间
  */
 namespace PUMP {
 
@@ -46,7 +46,7 @@ public:
   typedef nsp_std::vector<PtrWatcher> WatcherList;
 
 public:
-  explicit Pump(WPtrCbMailboxCaller pMbCaller);
+  explicit Pump(WPtrICbMailboxEvoker pMbEvoker);
   
   ~Pump();
   /**
@@ -92,18 +92,18 @@ private:
   //! 存放 Wather 对象指针的数组对象
   WatcherList m_watchers;
   //! 回调函数邮箱函数执行执行接口对象
-  WPtrCbMailboxCaller m_wpMbCaller;
+  WPtrICbMailboxEvoker m_wpMbEvoker;
   //! 标志 Pump 当前的运行状态
   enum PumpState m_state;
 
 #ifdef __CODE_TEST
 public:
-  size_t test_MbCaller() {
-    PtrCbMailboxCaller t_pMailCaller = m_wpMbCaller.lock();
-    if (t_pMailCaller == NULL) {
+  size_t test_MbEvoker() {
+    PtrICbMailboxEvoker t_pMailEvoker = m_wpMbEvoker.lock();
+    if (t_pMailEvoker == NULL) {
       return 0;
     }
-    return t_pMailCaller->runAll();
+    return t_pMailEvoker->runAll();
   }
 
 #endif // __CODE_TEST
