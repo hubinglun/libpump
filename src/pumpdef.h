@@ -20,7 +20,17 @@ namespace PUMP {
 /** 事件优先级的数值类型, 与 enum EventPriority 对应 */
 typedef unsigned short ev_prior_t;
 
-/** 枚举常量
+#ifdef _WIN32
+typedef HANDLE pump_fd_t;
+#else
+#ifdef __linux
+typedef int pump_fd_t;
+#endif // __linux
+#endif // _WIN32
+
+/**
+ * @enum EventPriority
+ * @brief Event 优先级
  *
  * 定义了事件对象 Event 优先级, 从上往下优先级由高到低*/
 enum EventPriority {
@@ -30,7 +40,9 @@ enum EventPriority {
   EVPRIOR_DEFAULT,    //! 默认优先级, 即最低
 };
 
-/** 枚举常量
+/**
+ * @enum EventType
+ * @brief Event 生命周期状态
  *
  * 定义了事件对象 Event 生命周期状态
  * > EVSTATE_INIT 初始化状态, 表示事件刚刚被构造
@@ -50,20 +62,24 @@ enum EventState {
   EVSTATE_SOLVED,    //! 已处理态
 };
 
-/** 枚举常量
+/**
+ * @enum EventType
+ * @brief Event 基本类型
  *
  * 定义了事件对象 Event 基本类型
  * > EVTYPE_PRE 事前事件, 加入到 Watcher 的 PreEventsList 中在每一轮 preProcess() 中被执行
  * > EVTYPE_NORM 普通事件, 加入到 Watcher 的 NormEventsList 中在每一轮 dispatch() 中检测并激活
  * > EVTYPE_POST 事后事件, 加入到 Watcher 的 PostEventsList 中在每一轮 postProcess() 中被执行
- * */
+ */
 enum EventType {
   EVTYPE_PRE,   //! 事前事件
   EVTYPE_NORM,  //! 普通事件
   EVTYPE_POST,  //! 事后事件
 };
 
-/** 枚举常量
+/**
+ * @enum enum PumpState
+ * @brief Pump 生命周期状态
  *
  * 定义了事件循环对象 Pump 生命周期状态
  * > PUMPSTATE_NEW 表示 Pump 对象刚刚构造, 需要初始化 WatcherList 后才能运行
@@ -78,13 +94,25 @@ enum EventType {
  * PUMPSTATE_INIT -> PUMPSTATE_START
  * PUMPSTATE_INIT -> PUMPSTATE_PAUSE
  * PUMPSTATE_STOP <-> PUMPSTATE_START <-> PUMPSTATE_PAUSE
- * */
+ */
 enum PumpState {
   PUMPSTATE_NEW,    //! 新建态
-  PUMPSTATE_INIT,  //! 初始化态
-  PUMPSTATE_STOP,    //! 终止态
+  PUMPSTATE_INIT,   //! 初始化态
+  PUMPSTATE_STOP,   //! 终止态
   PUMPSTATE_START,  //! 运行态
   PUMPSTATE_PAUSE,  //! 挂起态
+};
+
+/**
+ * @enum enum TimerType
+ * @brief 定时器类型
+ *
+ * - TMTYPE_ONETIME 一次性定时器
+ * - TMTYPE_PERIODIC 周期性定时器
+ */
+enum TimerType {
+  TMTYPE_ONETIME,   //! 一次性定时器
+  TMTYPE_PERIODIC   //! 周期性定时器
 };
 
 }
