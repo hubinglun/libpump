@@ -10,16 +10,50 @@
 
 namespace PUMP {
 
-Wather::Wather() {
+////////////////////////////////////////////////
+//                   Wather
+////////////////////////////////////////////////
+
+Wather::Wather(PtrCbMailboxMgr pMbMgr)
+  : m_pMbMgr(pMbMgr) {
+  
+}
+
+void Wather::setArgIn(PtrArg _IN) {
+  m_argIn = _IN;
+}
+
+PtrArg Wather::getArgOut() {
+  return m_argOut;
+}
+
+////////////////////////////////////////////////
+//                   Wather
+////////////////////////////////////////////////  
+
+IWather::IWather() {}
+
+IWather::IWather(PtrCbMailboxMgr pMbMgr)
+  : Wather(pMbMgr) {}
+
+IWather::~IWather() {}
+
+void IWather::doWatching() {
+  preProcess();
+  dispatch();
+  postProcess();
+}
+
+void IWather::preProcess() {
 
 }
 
-Wather::~Wather() {
+int IWather::dispatch() {
 
 }
 
-void Wather::doWatching() {
+void IWather::postProcess() {
 
 }
-
+  
 }
