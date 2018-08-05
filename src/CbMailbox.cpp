@@ -4,7 +4,7 @@
 
 #include "CbMailbox.h"
 
-namespace PUMP{
+namespace PUMP {
 
 ////////////////////////////////////////////////
 //                 CbList
@@ -15,23 +15,23 @@ CbList::CbList()
     m_pRunLFns(&m_lFns_1) {
 }
 
-CbList::~CbList(){
+CbList::~CbList() {
 
 }
 
-bool CbList::insert(PtrCbFn pfn){
+bool CbList::insert(PtrCbFn pfn) {
   m_pRevLFns->push_back(pfn);
 }
 
-size_t CbList::runAll(){
-  if(m_pRunLFns->empty()){
+size_t CbList::runAll() {
+  if (m_pRunLFns->empty()) {
     // (双缓冲) 交换 m_pRevLFns 与 m_pRunLFns
     swapLRef();
   }
   size_t t_iN = m_pRunLFns->size();
-  for(nsp_std::list<PtrCbFn>::iterator it = m_pRunLFns->begin();
-      it!=m_pRunLFns->end();
-      it++){
+  for (nsp_std::list<PtrCbFn>::iterator it = m_pRunLFns->begin();
+       it != m_pRunLFns->end();
+       it++) {
     (*(*it))();
   }
   // 回调处理完毕，需要清理链表
@@ -40,8 +40,8 @@ size_t CbList::runAll(){
   return t_iN;
 }
 
-void CbList::swapLRef(){
-  std::list<PtrCbFn> * t_pRun = m_pRunLFns;
+void CbList::swapLRef() {
+  std::list<PtrCbFn> *t_pRun = m_pRunLFns;
   
   // 加锁, 不允许其他线程再向“前” m_pRevLFns 插入回调
   lockRevLFns();
@@ -50,12 +50,12 @@ void CbList::swapLRef(){
   unlockRevLFns();
 }
 
-bool CbList::lockRevLFns(){
+bool CbList::lockRevLFns() {
   m_mtxRevLFns.lock();
   return true;
 }
 
-bool CbList::unlockRevLFns(){
+bool CbList::unlockRevLFns() {
   m_mtxRevLFns.unlock();
   return true;
 }
@@ -64,27 +64,26 @@ bool CbList::unlockRevLFns(){
 //                 CbQueueMailbox
 ////////////////////////////////////////////////
 
-CbQueueMailbox::CbQueueMailbox(){
+CbQueueMailbox::CbQueueMailbox() {
   initCbPriorQueue();
 }
 
-CbQueueMailbox::~CbQueueMailbox(){
+CbQueueMailbox::~CbQueueMailbox() {
   disposeCbPriorQueue();
 }
 
-bool CbQueueMailbox::insert(ev_prior_t prior, PtrCbFn pfn){
+bool CbQueueMailbox::insert(ev_prior_t prior, PtrCbFn pfn) {
   CbPriorQueue::iterator it;
   
-  if(prior == EVPRIOR_DEFAULT) {
+  if (prior == EVPRIOR_DEFAULT) {
     // 默认优先级则加入最低优先级队列
     it = m_queCb.find(EVPRIOR_DEFAULT - 1);
-  }
-  else{
+  } else {
     // 其他优先级则加入对应队列
     it = m_queCb.find(prior);
   }
   
-  if(it == m_queCb.end())
+  if (it == m_queCb.end())
     return false;
   // 加入回调对象
   ((*it).second)->insert(pfn);
@@ -110,11 +109,12 @@ void CbQueueMailbox::initCbPriorQueue() {
        ++i) {
     // 按照优先级标准, 构造优先级队列
 //		m_queCb.insert(nsp_std::pair<ev_prior_t, PtrCbFnContainer>(i,nsp_boost::make_shared<CbList>()));
-    m_queCb.insert(nsp_std::make_pair(i, nsp_boost::make_shared<CbList>()));
+    // FIXME 此处CbFn容器CbList现在是写死的, 之后应该以修改为使用配置文件的配合工厂对象的形式
+    m_queCb.insert(nsp_std::make_pair(i, nsp_boost::make_shared<CbList/*FIXME*/>()));
   }
 }
 
-void CbQueueMailbox::disposeCbPriorQueue(){
+void CbQueueMailbox::disposeCbPriorQueue() {
   // Nothing To Do!!!
 }
 
@@ -123,11 +123,11 @@ void CbQueueMailbox::disposeCbPriorQueue(){
 ////////////////////////////////////////////////
 
 ICbMailboxMgr::
-ICbMailboxMgr(nsp_boost::weak_ptr<CbMailbox> pMailbox )
-  : m_pMailbox(pMailbox){}
+ICbMailboxMgr(nsp_boost::weak_ptr<CbMailbox> pMailbox)
+  : m_pMailbox(pMailbox) {}
 
 ICbMailboxMgr::
-~ICbMailboxMgr(){}
+~ICbMailboxMgr() {}
 
 bool
 ICbMailboxMgr::
@@ -145,10 +145,10 @@ insert(ev_prior_t prior, PtrCbFn pfn) {
 
 ICbMailboxEvoker::
 ICbMailboxEvoker(WPtrCbMailbox pMailbox)
-  : m_pMailbox(pMailbox){}
+  : m_pMailbox(pMailbox) {}
 
 ICbMailboxEvoker::
-~ICbMailboxEvoker(){}
+~ICbMailboxEvoker() {}
 
 size_t
 ICbMailboxEvoker::

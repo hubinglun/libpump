@@ -32,6 +32,12 @@ namespace nsp_boost = ::boost;
 namespace PUMP {
 
 /**
+ * @typedef typedef nsp_boost::shared_ptr<void> PtrArg
+ * @brief 函数参数对象指针
+ */
+typedef nsp_boost::shared_ptr<void> PtrArg;
+
+/**
  * @class CbFn [CbMailbox.h]
  *
  * @brief 托管回调函数仿函数对象基类,也是函数列表对象的元素;
@@ -49,7 +55,7 @@ namespace PUMP {
  */
 PUMP_ABSTRACT
 class CbFn
-  : public nsp_boost::noncopyable {
+  : virtual public nsp_boost::noncopyable {
 public:
   CbFn(bool bReturn = false)
     : m_bReturn(bReturn) {}
@@ -95,7 +101,7 @@ public:
   CbFnWithoutReturn()
     : CbFn(false) {}
   
-  ~CbFnWithoutReturn() {}
+  virtual ~CbFnWithoutReturn() {}
 };
 
 /** @class CbFnWithReturn [CbMailbox.h]
@@ -109,19 +115,17 @@ public:
   CbFnWithReturn()
     : CbFn(true) {}
   
-  ~CbFnWithReturn() {}
+  virtual ~CbFnWithReturn() {}
 };
 
 /**
  * @typedef 指向 CbFn 对象的指针
- *
  * @brief 定义本指针目的在于加入 list<PtrCbFn> 实现回调函数的托管
  */
 typedef nsp_boost::shared_ptr<CbFn> PtrCbFn;
 
 /**　
  * @class CbContainerMgr [CbMailbox.h]
- *
  * @brief 回调函数容器的管理接口, 增删改
  */
 PUMP_INTERFACE
@@ -144,7 +148,6 @@ public:
 
 /**
  * @class CbContainerEvoker [CbMailbox.h]
- *
  * @brief 回调函数容器的执行接口
  */
 PUMP_INTERFACE
@@ -158,7 +161,6 @@ public:
   /**
    * @fn virtual size_t runAll() = 0
    * @brief 遍历链表 m_pRunLFns 执行其中回调对象
-   *
    * @return 返回执行的回调对象数量
    */
   virtual size_t runAll() = 0;
@@ -182,7 +184,6 @@ public:
 
 /**
  * @class CbList [CbMailbox.h]
- *
  * @brief 回调函数链表,回调对象的托管对象.在优先级队列中存放某一个优先级下的所有函数对象
  * 接收任意参数类型, 个数及返回值类型的回调函数对象.
  */
@@ -192,16 +193,15 @@ class CbList
 public:
   CbList();
   
-  ~CbList();
+  virtual ~CbList();
   
   /**
    * @fn bool insert(PtrCbFn pfn)
    * @brief 向 m_pRevLFns 尾插入一个回调对象
-   *
-   * @param[in] pfn 要插入链表的回调对象(注：由于回调对象会被修改,禁止将参数声明为const)
+   * @param [in] pfn 要插入链表的回调对象(注：由于回调对象会被修改,禁止将参数声明为const)
    * @return 插入成功返回true
    */
-  bool insert(PtrCbFn pfn);
+  virtual bool insert(PtrCbFn pfn);
   
   /**
    * @fn size_t runAll()
@@ -209,7 +209,7 @@ public:
    *
    * @return 返回执行的回调对象数量
    */
-  size_t runAll();
+  virtual size_t runAll();
 
 private:
   /**
@@ -270,8 +270,8 @@ public:
   /**
    * @fn virtual bool insert(ev_prior_t prior, PtrCbFn pfn) = 0
    * @brief 向 m_pRevLFns 尾插入一个回调对象
-   * @param[in] prior 回调函数的优先级, 决定放入的容器
-   * @param[in] pfn 要放入邮箱的回调对象(注：由于回调对象会被修改,禁止将参数声明为const)
+   * @param [in] prior 回调函数的优先级, 决定放入的容器
+   * @param [in] pfn 要放入邮箱的回调对象(注：由于回调对象会被修改,禁止将参数声明为const)
    * @return 插入成功返回true
    */
   virtual bool insert(ev_prior_t prior, PtrCbFn pfn) = 0;
@@ -302,7 +302,8 @@ typedef nsp_boost::shared_ptr<CbMailboxEvoker> PtrCbMailboxEvoker;
 typedef nsp_boost::weak_ptr<CbMailboxMgr> WPtrCbMailboxMgr;
 typedef nsp_boost::shared_ptr<CbMailboxMgr> PtrCbMailboxMgr;
 
-/** @class CbContainer [CbMailbox.h]
+/**
+ * @class CbContainer [CbMailbox.h]
  * @brief 存放回调函数容器接口类
  *
  * 必须实现接口,并且配上真正的容器存储对象,才是完整的回调函数容器
@@ -351,22 +352,22 @@ public:
   
   CbQueueMailbox();
   
-  ~CbQueueMailbox();
+  virtual ~CbQueueMailbox();
   
   /**
    * @fn bool insert(ev_prior_t prior, PtrCbFn pFn)
    * @brief 向优先级队列插入一个回调对象
-   * @param prior 回调对象的优先级
-   * @param pFn 回调对象
+   * @param [in] prior 回调对象的优先级
+   * @param [in] pFn 回调对象
    */
-  bool insert(ev_prior_t prior, PtrCbFn pFn);
+  virtual bool insert(ev_prior_t prior, PtrCbFn pFn);
   
   /**
    * @fn size_t runAll()
    * @brief 按优先级遍历各级函数链表, 执行回调
    * @return 执行的函数对象数量
    */
-  size_t runAll();
+  virtual size_t runAll();
 
 private:
   void initCbPriorQueue();
@@ -386,6 +387,8 @@ PUMP_IMPLEMENT
 class ICbMailboxMgr
   : virtual public CbMailboxMgr {
 public:
+  ICbMailboxMgr() {}
+  
   explicit ICbMailboxMgr(nsp_boost::weak_ptr<CbMailbox> pMailbox);
   
   virtual ~ICbMailboxMgr();
@@ -397,7 +400,7 @@ public:
    * @param [in] pfn 要放入邮箱的回调对象(注：由于回调对象会被修改,禁止将参数声明为const)
    * @return 插入成功返回true
    */
-  bool insert(ev_prior_t prior, PtrCbFn pfn);
+  virtual bool insert(ev_prior_t prior, PtrCbFn pfn);
 
 private:
   WPtrCbMailbox m_pMailbox;
@@ -420,7 +423,7 @@ public:
    * @brief 遍历链表 m_pRunLFns 执行其中回调对象
    * @return 返回执行的回调对象数量
    */
-  size_t runAll();
+  virtual size_t runAll();
 
 private:
   WPtrCbMailbox m_pMailbox;
