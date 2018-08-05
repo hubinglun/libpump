@@ -7,12 +7,20 @@
  * @date 2018.07.27
  */
 #include "Pump.h"
+
+#include <glog/logging.h>
+
 #include "infratest_CbMailbox.h"
 
+using namespace google;
 using namespace PUMP;
 
 void initMailbox(PtrCbMailbox pMailbox) {
 //	CbQueueMailbox cbMB;
+  google::InitGoogleLogging("test");
+  google::SetStderrLogging(google::GLOG_INFO);
+  
+  LOG(INFO)<<"test info";
   
   PtrCbFn afn(new cb_func1(3));
   boost::shared_ptr<cb_func1> ptr1 = dynamic_pointer_cast<cb_func1>(afn);
@@ -41,6 +49,8 @@ void initMailbox(PtrCbMailbox pMailbox) {
   pMailbox->insert(EVPRIOR_LEVEL1, afn2);
   pMailbox->insert(EVPRIOR_LEVEL2, afn3);
 //	pMailbox->insert(EVPRIOR_LEVEL0,afn4);
+  
+  google::ShutdownGoogleLogging();
 }
 
 int main() {
@@ -49,7 +59,7 @@ int main() {
   initMailbox(pMailbox);
   // 构造一个 ICbMailboxEvoker 的托管对象
   PtrICbMailboxEvoker pEvoker = nsp_boost::make_shared<ICbMailboxEvoker>(pMailbox);
-  Pump t_pump(pEvoker);
-  nsp_std::cout << t_pump.test_MbEvoker() << nsp_std::endl;
+  IPump t_pump(pEvoker);
+  nsp_std::cout << t_pump.test_MbEvoker_runAll() << nsp_std::endl;
   return 0;
 }

@@ -8,7 +8,7 @@ using namespace std;
 
 class test_A{
 protected:
-	int a=1;
+	int a;
 };
 
 class test_A_a
