@@ -31,7 +31,7 @@ namespace PUMP{
  * 用于缓存IO数据, 使用多个非连续等长内存块存储数据, 并使用内存池申请
  * 和释放内存, 获得了较std::string更高的IO性能
  */
-template<class _Elem, 
+template<class _Elem,
   class _Alloc = nsp_std::allocator<_Elem> >
 class Buffer
 {
