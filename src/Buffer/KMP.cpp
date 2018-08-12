@@ -1,23 +1,19 @@
 #include "KMP.h"
 
-namespace PUMP{
+namespace PUMP {
 
-KMP::KMP()
-{
+KMP::KMP() {
 }
 
 
-KMP::~KMP()
-{
+KMP::~KMP() {
 }
 
-void KMP::cal_next(const char *szPattern, const long iLen)
-{
+void KMP::cal_next(const char *szPattern, const long iLen) {
   m_vNext.clear();
   m_vNext.push_back(-1);//next[0]初始化为-1，-1表示不存在相同的最大前缀和最大后缀
   int k = -1;//k初始化为-1
-  for (int q = 1; q <= iLen - 1; q++)
-  {
+  for (int q = 1; q <= iLen - 1; q++) {
     while (k > -1 && szPattern[k + 1] != szPattern[q])//如果下一个不同，那么k就变成next[k]，注意next[k]是小于k的，无论k取任何值。
     {
       k = m_vNext[k];//往前回溯
@@ -30,12 +26,11 @@ void KMP::cal_next(const char *szPattern, const long iLen)
   }
 }
 
-long KMP::apply(const char *szSrc, const int iSrcLen, const char *szPattern, const int iPLen){
+long KMP::apply(const char *szSrc, const int iSrcLen, const char *szPattern, const int iPLen) {
   cal_next(szPattern, iPLen);//计算next数组
   int k = -1;
-  for (int i = 0; i < iSrcLen; i++)
-  {
-    while (k >-1 && szPattern[k + 1] != szSrc[i])//ptr和str不匹配，且k>-1（表示ptr和str有部分匹配）
+  for (int i = 0; i < iSrcLen; i++) {
+    while (k > -1 && szPattern[k + 1] != szSrc[i])//ptr和str不匹配，且k>-1（表示ptr和str有部分匹配）
       k = m_vNext[k];//往前回溯
     if (szPattern[k + 1] == szSrc[i])
       k = k + 1;
@@ -49,11 +44,11 @@ long KMP::apply(const char *szSrc, const int iSrcLen, const char *szPattern, con
   }
   return -1;
 }
-long KMP::apply(char **pszSrc, const long iSLen, const int iSCount, const char *szPattern, const long iPLen){
+
+long KMP::apply(char **pszSrc, const long iSLen, const int iSCount, const char *szPattern, const long iPLen) {
   cal_next(szPattern, iPLen);//计算next数组
   int k = -1;
-  for (int i = 0; i < iSLen*iSCount; i++)
-  {
+  for (int i = 0; i < iSLen * iSCount; i++) {
     while (k > -1 && szPattern[k + 1] != pszSrc[i / iSLen][i % iSLen])//ptr和str不匹配，且k>-1（表示ptr和str有部分匹配）
       k = m_vNext[k];//往前回溯
     if (szPattern[k + 1] == pszSrc[i / iSLen][i % iSLen])
@@ -69,11 +64,10 @@ long KMP::apply(char **pszSrc, const long iSLen, const int iSCount, const char *
   return -1;
 }
 
-long KMP::apply(const nsp_std::deque<char*> & vBuf, const long iSrcLen, const char *szPattern, const long iPLen){
+long KMP::apply(const nsp_std::deque<char *> &vBuf, const long iSrcLen, const char *szPattern, const long iPLen) {
   cal_next(szPattern, iPLen);//计算next数组
   int k = -1;
-  for (size_t i = 0; i < vBuf.size()*iSrcLen; i++)
-  {
+  for (size_t i = 0; i < vBuf.size() * iSrcLen; i++) {
     while (k > -1 && szPattern[k + 1] != vBuf[i / iSrcLen][i % iSrcLen])//ptr和str不匹配，且k>-1（表示ptr和str有部分匹配）
       k = m_vNext[k];//往前回溯
     if (szPattern[k + 1] == vBuf[i / iSrcLen][i % iSrcLen])

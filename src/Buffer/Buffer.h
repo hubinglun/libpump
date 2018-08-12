@@ -20,7 +20,7 @@
 
 namespace nsp_std = std;
 
-namespace PUMP{
+namespace PUMP {
 
 /**
  * @class Buffer
@@ -33,10 +33,10 @@ namespace PUMP{
  */
 template<class _Elem,
   class _Alloc = nsp_std::allocator<_Elem> >
-class Buffer
-{
+class Buffer {
 public:
-  Buffer(const size_t iBufLen, _Alloc * alloc = NULL);
+  Buffer(const size_t iBufLen, _Alloc *alloc = NULL);
+  
   ~Buffer();
   
   /**
@@ -46,11 +46,14 @@ public:
    * @param iLen
    * @return
    */
-  long append(const char * szSrc, const size_t iSLen);
+  long append(const char *szSrc, const size_t iSLen);
+  
   long erase(const size_t iLen);
-  long find(const char * szSrc, const size_t iSLen);
+  
+  long find(const char *szSrc, const size_t iSLen);
+
 private:
-  _Alloc * m_alloc;
+  _Alloc *m_alloc;
   nsp_std::deque<_Elem *> m_vBufs;
   const size_t m_iBufLen;
   long m_iIndxDel;
@@ -59,37 +62,35 @@ private:
 
 template<class _Elem,
   class _Alloc>
-Buffer<_Elem, _Alloc>::Buffer(const size_t iBufLen, _Alloc * alloc)
+Buffer<_Elem, _Alloc>::Buffer(const size_t iBufLen, _Alloc *alloc)
   :m_iBufLen(iBufLen),
    m_iIndxDel(-1),
-   m_alloc(alloc){
-  if (m_alloc == NULL){
+   m_alloc(alloc) {
+  if (m_alloc == NULL) {
     m_alloc = new nsp_std::allocator<char>();
   }
 }
 
 template<class _Elem,
   class _Alloc>
-Buffer<_Elem, _Alloc>::~Buffer()
-{
+Buffer<_Elem, _Alloc>::~Buffer() {
 }
 
 template<class _Elem,
   class _Alloc>
-long Buffer<_Elem, _Alloc>::append(const char * szSrc, const size_t iSLen){
-  const char * szWork = szSrc;
+long Buffer<_Elem, _Alloc>::append(const char *szSrc, const size_t iSLen) {
+  const char *szWork = szSrc;
   long iRestLen = static_cast<long>(iSLen);
   double tDiff1 = 0;
   
-  if (!m_vBufs.empty()){
-    char * szBuf = m_vBufs.back();
+  if (!m_vBufs.empty()) {
+    char *szBuf = m_vBufs.back();
     size_t iSize = strlen(szBuf);
-    if (iSize < m_iBufLen){
-      if (iRestLen <= m_iBufLen - iSize){
+    if (iSize < m_iBufLen) {
+      if (iRestLen <= m_iBufLen - iSize) {
         strncat(szBuf + iSize, szWork, static_cast<size_t >(iRestLen));
         iRestLen -= iRestLen;
-      }
-      else{
+      } else {
         strncat(szBuf + iSize, szWork, m_iBufLen - iSize);
         szWork += m_iBufLen - iSize;
         iRestLen -= (m_iBufLen - iSize);
@@ -97,17 +98,16 @@ long Buffer<_Elem, _Alloc>::append(const char * szSrc, const size_t iSLen){
     }
   }
   
-  while (iRestLen > 0)
-  {
+  while (iRestLen > 0) {
 #ifdef _TEST_CODE
     clock_t start, end;
-		start = clock();
+    start = clock();
 #endif // _TEST_CODE
     //char * szNewBuf = new char[m_iBufLen + 1];
-    char * szNewBuf = m_alloc->allocate(m_iBufLen + 1);
+    char *szNewBuf = m_alloc->allocate(m_iBufLen + 1);
 #ifdef _TEST_CODE
     end = clock();
-		tDiff1 += (double)(end - start) / CLOCKS_PER_SEC;
+    tDiff1 += (double)(end - start) / CLOCKS_PER_SEC;
 #endif // _TEST_CODE
     memset(szNewBuf, 0, m_iBufLen + 1);
     strncat(szNewBuf, szWork, iRestLen - m_iBufLen >= 0 ? m_iBufLen : iRestLen);
@@ -123,18 +123,18 @@ long Buffer<_Elem, _Alloc>::append(const char * szSrc, const size_t iSLen){
 
 template<class _Elem,
   class _Alloc>
-long Buffer<_Elem, _Alloc>::find(const char * szSrc, const size_t iSLen){
+long Buffer<_Elem, _Alloc>::find(const char *szSrc, const size_t iSLen) {
   return m_kmp.apply(m_vBufs, m_iBufLen, szSrc, iSLen);
 }
 
 template<class _Elem,
   class _Alloc>
-long Buffer<_Elem, _Alloc>::erase(const size_t iLen){
+long Buffer<_Elem, _Alloc>::erase(const size_t iLen) {
   if (m_vBufs.empty())
     return 0;
-  char * pWork = m_vBufs.front();
+  char *pWork = m_vBufs.front();
   m_vBufs.pop_front();
-  m_alloc->deallocate(pWork, m_iBufLen+1);
+  m_alloc->deallocate(pWork, m_iBufLen + 1);
   ++m_iIndxDel;
   return 1;
 }

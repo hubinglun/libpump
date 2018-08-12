@@ -17,18 +17,23 @@
 
 namespace nsp_std = std;
 
-namespace PUMP{
+namespace PUMP {
 
-class KMP
-{
+class KMP {
 public:
   KMP();
+  
   ~KMP();
+  
   long apply(const char *szSrc, const int iSrcLen, const char *szPattern, const int iPLen);
-  long apply(const nsp_std::deque<char*> & vBuf, const long iSrcLen, const char *szPattern, const long iPLen);
+  
+  long apply(const nsp_std::deque<char *> &vBuf, const long iSrcLen, const char *szPattern, const long iPLen);
+  
   long apply(char **pszSrc, const long iSLen, const int iSCount, const char *szPattern, const long iPLen);
+
 private:
   void cal_next(const char *szPattern, const long iPLen);
+  
   nsp_std::vector<int> m_vNext;
 };
 
