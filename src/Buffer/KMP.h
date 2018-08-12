@@ -35,6 +35,3 @@ private:
 }
 
 #endif //LIBPUMP_KMP_H
-
-
-

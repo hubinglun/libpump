@@ -147,7 +147,3 @@ typedef Buffer<char> IoBuffer;
 }
 
 #endif //LIBPUMP_BUFFER_H
-
-
-
-
