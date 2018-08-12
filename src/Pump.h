@@ -123,7 +123,7 @@ public:
    */
   virtual size_t init();
 
-#ifdef _TEST_LEVEL_0
+#ifdef _TEST_LEVEL_INFO
   /**
    * @brief
    * @tparam T
@@ -131,7 +131,7 @@ public:
    */
   template <class T>
   void test_createWatcher();
-#endif // _TEST_LEVEL_0
+#endif // _TEST_LEVEL_INFO
   
   /**
    * @fn virtual PtrWatcher begin()
@@ -262,13 +262,13 @@ public:
   /** 终结Pump循环，需要清理资源，释放fd等 */
   virtual void stop();
 
-#ifdef _TEST_LEVEL_0
+#ifdef _TEST_LEVEL_INFO
   /**
    * @fn void test_initWatcherList()
    * @brief 手动初始化 WatcherList
    */
   void test_initWatcherList();
-#endif // _TEST_LEVEL_0
+#endif // _TEST_LEVEL_INFO
 
 private:
   /**
@@ -288,7 +288,7 @@ private:
    */
   virtual size_t postWatching();
 
-#ifdef _TEST_LEVEL_0
+#ifdef _TEST_LEVEL_INFO
 public:
   size_t test_MbEvoker_runAll() {
     PtrICbMailboxEvoker t_pMailEvoker = nsp_boost::dynamic_pointer_cast<ICbMailboxEvoker>(m_pMbEvoker);
@@ -298,7 +298,7 @@ public:
     return t_pMailEvoker->runAll();
   }
 
-#endif // _TEST_LEVEL_0
+#endif // _TEST_LEVEL_INFO
 
 };
 

@@ -82,7 +82,7 @@ void IPump::stop() {
   m_state = PUMPSTATE_STOP;
 }
 
-#ifdef _TEST_LEVEL_0
+#ifdef _TEST_LEVEL_INFO
 
 void IPump::test_initWatcherList() {
   PtrRealWContainer t_pWl = nsp_boost::dynamic_pointer_cast<WatcherList>(m_pWatchers);
@@ -90,7 +90,7 @@ void IPump::test_initWatcherList() {
 //  t_pWl->test_createWatcher<>();
 }
 
-#endif // _TEST_LEVEL_0
+#endif // _TEST_LEVEL_INFO
 
 ////////////////////////////////////////////////
 //                   WatcherList
@@ -107,7 +107,7 @@ WatcherList::~WatcherList() {}
  */
 size_t WatcherList::init() {}
 
-#ifdef _TEST_LEVEL_0
+#ifdef _TEST_LEVEL_INFO
 
 template<class T>
 void WatcherList::test_createWatcher() {
@@ -115,7 +115,7 @@ void WatcherList::test_createWatcher() {
   m_vecWatcher.push_back(pWatcher);
 }
 
-#endif // _TEST_LEVEL_0
+#endif // _TEST_LEVEL_INFO
 
 /**
  * @fn WatcherList::WPtrWatcher begin()

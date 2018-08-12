@@ -11,7 +11,8 @@ set(SRC ./src/pumpdef.h src/Buffer/Buffer.h ${DIRSRCS})
 message(">>> SRC: ${SRC}")
 
 include_directories(./src)
-add_compile_options(-D_TEST_LEVEL_0 -Wno-write-strings -lpthread)
+# test code level: DEBUG INFO TRACE
+add_compile_options(-D_TEST_LEVEL_INFO -Wno-write-strings -lpthread)
 
 # 产生动态库 libpump.so
 add_library(pump SHARED ${SRC})
