@@ -1,0 +1,25 @@
+128, 10
+        Buffer append: 0
+        string append: 0
+        Buffer find: 0.171
+        string find: 0.001
+128, 100
+        Buffer append: 0.001
+        string append: 0
+        Buffer find: 0.918
+        string find: 0.007
+128, 1000
+        Buffer append: 0.009
+        string append: 0.005
+        Buffer find: 9.065
+        string find: 0.061
+128, 10000
+        Buffer append: 0.103
+        string append: 0.214
+        Buffer find: 89.907
+        string find: 0.627
+128, 100000
+        Buffer append: 1.063
+        string append: 54.15
+        Buffer find: 894.724
+        string find: 6.643
