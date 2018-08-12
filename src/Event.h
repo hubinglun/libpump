@@ -157,7 +157,7 @@ struct TimerEvent
   : public FdEvent {
   Timestamp m_tsInit;
   Timestamp m_tsTimeout;
-  enum TimerType;
+  TimerType m_enTpye;
   
   virtual void init();
 };

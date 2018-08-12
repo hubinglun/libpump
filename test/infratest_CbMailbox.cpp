@@ -1,7 +1,7 @@
 #include "infratest_CbMailbox.h"
 
 /** 测试 场景<1> 回调对象 CbFn 能否正常工作
- * */
+ */
 void testScene0(){
 	std::vector<PtrCbFn> vfn;
 
