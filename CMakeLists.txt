@@ -6,17 +6,18 @@ set(CMAKE_CXX_STANDARD 98)
 include(CMake/Dependance.cmake)
 
 aux_source_directory(./src DIRSRCS)
-set(SRC ./src/pumpdef.h ${DIRSRCS})
-message("SRC >> ${SRC}")
+aux_source_directory(./src/Buffer DIRSRCS)
+set(SRC ./src/pumpdef.h src/Buffer/Buffer.h ${DIRSRCS})
+message(">>> SRC: ${SRC}")
 
 include_directories(./src)
-add_compile_options(-D_TEST_LEVEL_0 -lpthread)
+add_compile_options(-D_TEST_LEVEL_0 -Wno-write-strings -lpthread)
 
 # 产生动态库 libpump.so
 add_library(pump SHARED ${SRC})
 
 set(all_libs ${Boost_LIBRARIES} ${glog_libs} ${protobuf_libs})
-message(>>> ${all_libs})
+message(">>> LIBS: ${all_libs}")
 
 # 测试代码
 add_executable(infratest_CbMailbox test/infratest_CbMailbox.cpp)
@@ -27,3 +28,6 @@ target_link_libraries(infratest_general_using ${all_libs} pump)
 
 add_executable(infratest_pump test/infratest_pump.cpp)
 target_link_libraries(infratest_pump ${all_libs} pump)
+
+add_executable(infratest_Buffer test/infratest_Buffer.cpp)
+target_link_libraries(infratest_Buffer ${all_libs} pump)
