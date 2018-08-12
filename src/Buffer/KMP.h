@@ -30,7 +30,7 @@ public:
   long apply(const nsp_std::deque<char *> &vBuf, const long iSrcLen, const char *szPattern, const long iPLen);
   
   long apply(char **pszSrc, const long iSLen, const int iSCount, const char *szPattern, const long iPLen);
-  
+
 private:
   void cal_next(const char *szPattern, const long iPLen);
   
