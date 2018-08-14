@@ -1,6 +1,7 @@
 # libpump
 
-<img align=center src="https://github.com/csjy309450/libpump/blob/master/resource/pump.png?raw=true"/>
+<div align=center>
+<img src="https://github.com/csjy309450/libpump/blob/master/resource/pump.png?raw=true"/></div>
 
 轻量级的跨平台事件循环库框架，采用 (Wather) 插件的形式监听用户注册 (Event) 事件.
 

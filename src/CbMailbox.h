@@ -183,6 +183,15 @@ public:
 };
 
 /**
+ * @typedef typedef nsp_boost::shared_ptr<CbContainer> PtrCbContainer
+ * @brief 回调优先级队列元素类型
+ *
+ * 优先级队列中存放智能指针的好处是内存托管, 另外也因为 CbList 是不允许拷贝的,
+ * 不符合STL元素对象标准
+ */
+typedef nsp_boost::shared_ptr<CbContainer> PtrCbContainer;
+
+/**
  * @class CbList [CbMailbox.h]
  * @brief 回调函数链表,回调对象的托管对象.在优先级队列中存放某一个优先级下的所有函数对象
  * 接收任意参数类型, 个数及返回值类型的回调函数对象.
@@ -314,15 +323,6 @@ class CbMailbox
     public CbMailboxMgr {
 public:
   
-  /**
-   * @typedef typedef nsp_boost::shared_ptr<CbContainer> PtrCbFnContainer
-   * @brief 回调优先级队列元素类型
-   *
-   * 优先级队列中存放智能指针的好处是内存托管, 另外也因为 CbList 是不允许拷贝的,
-   * 不符合STL元素对象标准
-   */
-  typedef nsp_boost::shared_ptr<CbContainer> PtrCbFnContainer;
-  
   CbMailbox() {}
   
   virtual ~CbMailbox() {}
@@ -341,14 +341,14 @@ class CbQueueMailbox
 public:
   
   /**
-   * @def  typedef nsp_std::map<ev_prior_t, CbMailbox::PtrCbFnContainer> CbPriorQueue
+   * @def  typedef nsp_std::map<ev_prior_t, CbMailbox::PtrCbContainer> CbPriorQueue
    * @brief 回调优先级队列对象
    *
    * - 由 map 容器实现
    *    -# map key 值为枚举类型 EventPriority
    *    -# value 值为回调链表的智能指针
    */
-  typedef nsp_std::map<ev_prior_t, CbMailbox::PtrCbFnContainer> CbPriorQueue;
+  typedef nsp_std::map<ev_prior_t, PtrCbContainer> CbPriorQueue;
   
   CbQueueMailbox();
   

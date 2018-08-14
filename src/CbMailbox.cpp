@@ -108,7 +108,7 @@ void CbQueueMailbox::initCbPriorQueue() {
        i < EVPRIOR_DEFAULT;
        ++i) {
     // 按照优先级标准, 构造优先级队列
-//		m_queCb.insert(nsp_std::pair<ev_prior_t, PtrCbFnContainer>(i,nsp_boost::make_shared<CbList>()));
+//		m_queCb.insert(nsp_std::pair<ev_prior_t, PtrCbContainer>(i,nsp_boost::make_shared<CbList>()));
     // FIXME 此处CbFn容器CbList现在是写死的, 之后应该以修改为使用配置文件的配合工厂对象的形式
     m_queCb.insert(nsp_std::make_pair(i, nsp_boost::make_shared<CbList/*FIXME*/>()));
   }

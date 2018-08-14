@@ -8,21 +8,21 @@
  */
 #include "Event.h"
 
-namespace PUMP{
+namespace PUMP {
 
 ////////////////////////////////////////////////
 //                   Event
 ////////////////////////////////////////////////
 
 Event::Event()
-  :emEvPriority_(EVPRIOR_DEFAULT),
-   emEvState_(EVSTATE_INIT),
-   emEvType_(EVTYPE_NORM) { }
-
-Event::Event(const enum EventType emEvType)
   : emEvPriority_(EVPRIOR_DEFAULT),
     emEvState_(EVSTATE_INIT),
-    emEvType_(emEvType) { }
+    emEvType_(EVTYPE_NORM) {}
+
+Event::Event(enum EventType emEvType)
+  : emEvPriority_(EVPRIOR_DEFAULT),
+    emEvState_(EVSTATE_INIT),
+    emEvType_(emEvType) {}
 
 ////////////////////////////////////////////////
 //                   PreEvent
@@ -63,14 +63,14 @@ FdEvent::~FdEvent() {}
 //                   IoEvent
 ////////////////////////////////////////////////
 
-void IoEvent::init(){
+void IoEvent::init() {
 }
 
 ////////////////////////////////////////////////
 //                   TimerEvent
 ////////////////////////////////////////////////
 
-void TimerEvent::init(){
+void TimerEvent::init() {
 
 }
 
@@ -78,7 +78,7 @@ void TimerEvent::init(){
 //                   SignalEvent
 ////////////////////////////////////////////////
 
-void SignalEvent::init(){
+void SignalEvent::init() {
 
 }
 

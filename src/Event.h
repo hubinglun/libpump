@@ -12,11 +12,14 @@
 #define LIBPUMP_EVENT_H
 
 #include <string>
-
-#include "pumpdef.h"
 #include "CbMailbox.h"
 
+#include <boost/noncopyable.hpp>
+
+#include "pumpdef.h"
+
 namespace nsp_std = ::std;
+namespace nsp_boost = ::boost;
 
 namespace PUMP {
 
@@ -69,7 +72,7 @@ struct Event
 public:
   Event();
   
-  Event(const enum EventType emEvType);
+  Event(enum EventType emEvType);
   
   virtual ~Event() {}
 };
@@ -116,13 +119,7 @@ struct NormEvent
   virtual ~NormEvent();
 };
 
-/**
- * @struct FD_T []
- * @brief 文件描述符对象
- */
-struct FD_T {
-  pump_fd_t fd_;
-};
+struct IoFd;
 
 /**
  * @struct FdEvent []
@@ -131,7 +128,7 @@ struct FD_T {
 PUMP_ABSTRACT
 struct FdEvent
   : public NormEvent {
-  FD_T fd_;
+  pump_fd_t fd_;
   
   FdEvent();
   
