@@ -72,9 +72,9 @@ enum EventState {
  * > EVTYPE_POST 事后事件, 加入到 Watcher 的 PostEventsList 中在每一轮 postProcess() 中被执行
  */
 enum EventType {
-  EVTYPE_PRE,   //! 事前事件
+  EVTYPE_PRE,   //! 前置事件
   EVTYPE_NORM,  //! 普通事件
-  EVTYPE_POST,  //! 事后事件
+  EVTYPE_POST,  //! 后置事件
 };
 
 /**
@@ -104,7 +104,7 @@ enum PumpState {
 };
 
 /**
- * @enum enum TimerType
+ * @enum TimerType
  * @brief 定时器类型
  *
  * - TMTYPE_ONETIME 一次性定时器
@@ -113,6 +113,38 @@ enum PumpState {
 enum TimerType {
   TMTYPE_ONETIME,   //! 一次性定时器
   TMTYPE_PERIODIC   //! 周期性定时器
+};
+
+#define IO_EV_IN  0x001 //! io fd 发生可读事件
+#define IO_EV_OUT 0x002 //! io fd 发生可写事件
+#define IO_EV_ERR 0x004 //! io fd 发生异常事件
+
+/**
+ * @enum FdCtlTyge
+ * @brief 描述对 IoFd 对象修改类型
+ */
+enum FdCtlTyge {
+  FD_CTL_ADD,  //! 增加监听事件类型
+  FD_CTL_DEL,  //! 删除监听事件类型
+  FD_CTL_MOD   //! 修改监听事件类型
+};
+
+/**
+ * @enum FdState
+ * @brief 文件描述符的生命周期状态
+ *
+ * - FD_STATE_INIT        fd 初始态
+ * - FD_STATE_LISTENED    fd 监听态
+ * - FD_STATE_CONNECTED   fd 连接态
+ * - FD_STATE_SHUTDOWNED  fd 半闭态
+ * - FD_STATE_CLOSED      fd 关闭态
+ */
+enum FdState {
+  FD_STATE_INIT,        //! fd 初始态
+  FD_STATE_LISTENED,    //! fd 监听态
+  FD_STATE_CONNECTED,   //! fd 连接态
+  FD_STATE_SHUTDOWNED,  //! fd 半闭态
+  FD_STATE_CLOSED       //! fd 关闭态
 };
 
 }
