@@ -14,11 +14,11 @@ include_directories(./src)
 # test code level: DEBUG INFO TRACE
 add_compile_options(-D_TEST_LEVEL_INFO -Wno-write-strings -lpthread)
 
-# 产生动态库 libpump.so
-add_library(pump SHARED ${SRC})
-
 set(all_libs ${Boost_LIBRARIES} ${glog_libs} ${protobuf_libs})
 message(">>> LIBS: ${all_libs}")
+
+# 产生动态库 libpump.so
+add_library(pump SHARED ${SRC} ${all_libs})
 
 # 测试代码
 add_executable(infratest_CbMailbox test/infratest_CbMailbox.cpp)
