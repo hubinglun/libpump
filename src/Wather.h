@@ -9,12 +9,26 @@
 #ifndef LIBPUMP_WATHER_H
 #define LIBPUMP_WATHER_H
 
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
+#include <cassert>
+#include <vector>
+#include <map>
+
+#ifdef linux
+#include <unistd.h>
+#endif // linux
+
 #include <boost/weak_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include "pumpdef.h"
 #include "CbMailbox.h"
+#include "Event.h"
 #include "MultiplexBackend.h"
+#include "Logger.h"
 
 namespace nsp_boost = ::boost;
 
@@ -63,6 +77,33 @@ private:
 
 typedef nsp_boost::shared_ptr<PrePostEvContainer> PtrPreEvContainer;
 typedef nsp_boost::shared_ptr<PrePostEvContainer> PtrPostEvContainer;
+
+/**
+ * @class EvList []
+ * @brief EventContainer 实现类, 存放Event对象的map
+ */
+PUMP_IMPLEMENT
+class EvList
+  : public EventContainer {
+public:
+  EvList() {}
+  
+  ~EvList() {}
+  
+  void insert(nsp_std::string & strName, PtrEvent pEv);
+  
+  void erase(nsp_std::string & strName);
+  
+  PtrEvent at(nsp_std::string & strName);
+
+private:
+  virtual size_t runAll() { return 0; }
+
+private:
+  nsp_std::map<nsp_std::string, PtrEvent> m_lEvs;
+};
+
+typedef nsp_boost::shared_ptr<EvList> PtrEvList;
 
 /**
  * @class Wather []
@@ -184,6 +225,10 @@ public:
 
 typedef nsp_boost::shared_ptr<FdContainer> PtrFdContainer;
 
+/**
+ * @class FdHashTable []
+ * @brief 存放 IoFd 的哈希表, 以 fd 值作为索引值
+ */
 PUMP_IMPLEMENT
 class FdHashTable
   : public FdContainer {
@@ -199,8 +244,60 @@ public:
   virtual void remove(pump_fd_t fd);
 
 private:
+  /** FIXME 1024 改用宏 */
   PtrFD m_arrFds[1024];
 };
+
+/**
+ * @class OnAccept
+ * @brief 接收到新连接请求时回调对象
+ */
+class OnAccept
+  : public CbFnWithoutReturn{
+  typedef nsp_boost::function<void(void)/*FIXME 确定参数列表*/> func_t;
+public:
+  OnAccept() {}
+  void operator()() {
+    m_fn();
+  }
+  func_t m_fn;
+};
+
+typedef nsp_boost::shared_ptr<OnAccept> PfnOnAccept;
+
+/**
+ * @class OnRecv
+ * @brief 接收到新数据时回调对象
+ */
+class OnRecv
+  : public CbFnWithoutReturn{
+  typedef nsp_boost::function<void(void)/*FIXME 确定参数列表*/> func_t;
+public:
+  OnRecv() {}
+  void operator()() {
+    m_fn();
+  }
+  func_t m_fn;
+};
+
+typedef nsp_boost::shared_ptr<OnRecv> PfnOnRecv;
+
+/**
+ * @class OnSend
+ * @brief 成功发送数据后回调对象
+ */
+class OnSend
+  : public CbFnWithoutReturn{
+  typedef nsp_boost::function<void(void)/*FIXME 确定参数列表*/> func_t;
+public:
+  OnSend() {}
+  void operator()() {
+    m_fn();
+  }
+  func_t m_fn;
+};
+
+typedef nsp_boost::shared_ptr<OnSend> PfnOnSend;
 
 /**
  * @class IoWather []
@@ -218,8 +315,20 @@ public:
 
 public:
   virtual void doWatching();
-  void PostAccept(/* FIXME 需要决定参数 */);
-  void PostConnect(/* FIXME 需要决定参数 */);
+  void init();
+  int newAccept(const char* szIp,int iPort,
+                PfnOnAccept onAccept,
+                PfnOnRecv onRecv,
+                PfnOnSend onSend);
+  int enableAccept(pump_fd_t fd);
+  int disableAccept(pump_fd_t fd);
+  /*void newConnection(const char* szIp,int iPort,
+                     PfnOnRecv onRecv,
+                     PfnOnSend onSend);*/
+  int enableRecv(pump_fd_t fd);
+  int disableRecv(pump_fd_t fd);
+  int enableSend(pump_fd_t fd);
+  int disableSend(pump_fd_t fd);
   void PostSend(/* FIXME 需要决定参数 */);
   void PostShutdown(/* FIXME 需要决定参数 */);
   void PostClose(/* FIXME 需要决定参数 */);
@@ -234,6 +343,8 @@ private:
 private:
   PtrPreEvContainer m_pPreEvents;
   PtrPostEvContainer m_pPostEvents;
+  PtrFdContainer m_pFds;
+  PtrMultiBackend m_pBackend;
 };
 
 }
