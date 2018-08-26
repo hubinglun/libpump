@@ -19,9 +19,11 @@
 #include <set>
 #include <stack>
 
+#include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 
 #include "pumpdef.h"
+#include "Logger.h"
 
 namespace nsp_std = ::std;
 namespace nsp_boost = ::boost;
@@ -94,6 +96,8 @@ public:
    */
   virtual int wait(IoFdRetList &fdRetList, timeval &tmv) = 0;
 };
+
+typedef nsp_boost::shared_ptr<MultiplexBackend> PtrMultiBackend;
 
 /**
  * @class Select []

@@ -19,6 +19,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/atomic.hpp>
 
+#include "Logger.h"
 #include "KMP.h"
 
 namespace nsp_std = std;

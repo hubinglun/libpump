@@ -19,6 +19,7 @@
 #include <boost/bind.hpp>
 
 #include "pumpdef.h"
+#include "Logger.h"
 #include "Wather.h"
 #include "CbMailbox.h"
 

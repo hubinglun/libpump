@@ -25,6 +25,7 @@
 #include <boost/thread/mutex.hpp>
 
 #include "pumpdef.h"
+#include "Logger.h"
 
 namespace nsp_std = ::std;
 namespace nsp_boost = ::boost;

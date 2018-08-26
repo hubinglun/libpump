@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <iostream>
 #include <vector>
+
 #include "Pump.h"
 
 using namespace boost;
@@ -15,9 +16,9 @@ using namespace std;
 using namespace PUMP;
 
 ///< 测试用例 <1> 带返回值, 带参数值函数
-int func1(int i){
-	printf("func1(int %d) = %d\n", i, i);
-	return i;
+int func1(int i) {
+  LOG(INFO) << "func1(int " << i << ") = " << i;
+  return i;
 }
 
 ///< 测试用例 <2> 带返回值, 带多参数值函数

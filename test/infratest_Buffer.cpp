@@ -7,6 +7,7 @@
 #include <cmath>
 #include <iostream>
 
+#include "Logger.h"
 /**
  * @bug 若不包含boost库的头文件, 链接时报错
  * @brief 链接错误如下:
@@ -52,8 +53,8 @@ void test_KMP(){
 
   assert(indx0 == indx1);
 
-  std::cout << "KMP: " << tDiff0 << std::endl;
-  std::cout << "find_first_of: " << tDiff1 << std::endl;
+  LOG(INFO) << "KMP: " << tDiff0 << std::endl;
+  LOG(INFO) << "find_first_of: " << tDiff1 << std::endl;
 }
 
 /** 测试用例<2> (通过)
@@ -66,15 +67,15 @@ void test_KMP2(){
   a[2] = "ijkl";
   KMP kmp;
   char *ptr = "abcdefghijkl\0";
-  std::cout << ptr << kmp.apply(a, 4, 3, ptr, strlen(ptr)) << std::endl;
+  LOG(INFO) << ptr << kmp.apply(a, 4, 3, ptr, strlen(ptr)) << std::endl;
   ptr = "bcd\0";
-  std::cout << ptr << kmp.apply(a, 4, 3, ptr, strlen(ptr)) << std::endl;
+  LOG(INFO) << ptr << kmp.apply(a, 4, 3, ptr, strlen(ptr)) << std::endl;
   ptr = "cde\0";
-  std::cout << ptr << kmp.apply(a, 4, 3, ptr, strlen(ptr)) << std::endl;
+  LOG(INFO) << ptr << kmp.apply(a, 4, 3, ptr, strlen(ptr)) << std::endl;
   ptr = "def\0";
-  std::cout << ptr << kmp.apply(a, 4, 3, ptr, strlen(ptr)) << std::endl;
+  LOG(INFO) << ptr << kmp.apply(a, 4, 3, ptr, strlen(ptr)) << std::endl;
   ptr = "efg\0";
-  std::cout << ptr << kmp.apply(a, 4, 3, ptr, strlen(ptr)) << std::endl;
+  LOG(INFO) << ptr << kmp.apply(a, 4, 3, ptr, strlen(ptr)) << std::endl;
 }
 
 #define BLOCK_SIZE 128
@@ -154,11 +155,11 @@ void test_Buffer(size_t iBlockSize, size_t iBatchSize){
   
   assert(indx1 == indx0);
   
-  std::cout << iBlockSize << ", " << iBatchSize << std::endl;
-  std::cout << "	Buffer append: " << tDiff0 << std::endl;
-  std::cout << "	string append: " << tDiff1 << std::endl;
-  std::cout << "	Buffer find: " << tDiff2 << std::endl;
-  std::cout << "	string find: " << tDiff3 << std::endl;
+  LOG(INFO) << iBlockSize << ", " << iBatchSize << std::endl;
+  LOG(INFO) << "	Buffer append: " << tDiff0 << std::endl;
+  LOG(INFO) << "	string append: " << tDiff1 << std::endl;
+  LOG(INFO) << "	Buffer find: " << tDiff2 << std::endl;
+  LOG(INFO) << "	string find: " << tDiff3 << std::endl;
 }
 
 /** 测试用例<4> (通过)
@@ -170,7 +171,7 @@ void cmp_bufferAndstring(){
   for (int i = 10; i < pow(10,ibatch); i *= 10){
     test_Buffer(128, i);
   }
-  std::cout<<">>> cmp_bufferAndstring complete! <<<"<<std::endl;
+  LOG(INFO)<<">>> cmp_bufferAndstring complete! <<<"<<std::endl;
 }
 
 /** 测试用例<5> (通过)
@@ -191,7 +192,7 @@ void test_IoBuffer(){
   ioBuf.append(tsz,strlen(tsz));
   ioBuf.erase(11);
   ioBuf.erase(4);
-  std::cout<<"test_IoBuffer complete"<<std::endl;
+  LOG(INFO)<<"test_IoBuffer complete"<<std::endl;
 }
 
 int main(int argc, char* argv[])
@@ -201,6 +202,10 @@ int main(int argc, char* argv[])
 //  test_Buffer(BLOCK_SIZE,BATCH_SIZE);
 //  cmp_bufferAndstring();
   test_IoBuffer();
-  return getchar();
+//  nsp_google::ShutdownGoogleLogging();
+
+
+//  getchar();
+  return 0;
 }
 

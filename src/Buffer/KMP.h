@@ -15,6 +15,8 @@
 #include <deque>
 #include <vector>
 
+#include "Logger.h"
+
 namespace nsp_std = std;
 
 namespace PUMP {

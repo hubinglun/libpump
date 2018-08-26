@@ -17,8 +17,8 @@ using namespace PUMP;
 
 void initMailbox(PtrCbMailbox pMailbox) {
 //	CbQueueMailbox cbMB;
-  google::InitGoogleLogging("test");
-  google::SetStderrLogging(google::GLOG_INFO);
+//  google::InitGoogleLogging("test");
+//  google::SetStderrLogging(google::GLOG_INFO);
   
   LOG(INFO)<<"test info";
   
@@ -50,7 +50,7 @@ void initMailbox(PtrCbMailbox pMailbox) {
   pMailbox->insert(EVPRIOR_LEVEL2, afn3);
 //	pMailbox->insert(EVPRIOR_LEVEL0,afn4);
   
-  google::ShutdownGoogleLogging();
+//  google::ShutdownGoogleLogging();
 }
 
 int main() {

@@ -17,6 +17,7 @@
 #include <boost/noncopyable.hpp>
 
 #include "pumpdef.h"
+#include "Logger.h"
 
 namespace nsp_std = ::std;
 namespace nsp_boost = ::boost;
@@ -141,10 +142,13 @@ struct FdEvent
   virtual void init() = 0;
 };
 
+PUMP_IMPLEMENT
 struct IoEvent
   : public FdEvent {
   virtual void init();
 };
+
+typedef nsp_boost::shared_ptr<IoEvent> PtrIoEvent;
 
 struct Timestamp {
 
