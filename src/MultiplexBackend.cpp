@@ -54,8 +54,8 @@ int Select::update(const IoFdCtl &change) {
       break;
     }
     case FD_CTL_MOD: {
-      if (change.fd_ev_ == 0 ||
-          m_fds.find(change.fd_) == m_fds.end()) {
+      if (change.fd_ev_ == 0
+          || (m_fds.find(change.fd_) == m_fds.end())) {
         return -1;
       }
       
@@ -64,13 +64,13 @@ int Select::update(const IoFdCtl &change) {
       FD_CLR(change.fd_, &m_setBackup.fdWrite);
       FD_CLR(change.fd_, &m_setBackup.fdError);
       // 重新按照参数设置
-      if (change.fd_ev_ & IO_EV_IN != 0) {
+      if ((change.fd_ev_ & IO_EV_IN) != 0) {
         FD_SET(change.fd_, &m_setBackup.fdRead);
       }
-      if (change.fd_ev_ & IO_EV_OUT != 0) {
+      if ((change.fd_ev_ & IO_EV_OUT) != 0) {
         FD_SET(change.fd_, &m_setBackup.fdWrite);
       }
-      if (change.fd_ev_ & IO_EV_ERR != 0) {
+      if ((change.fd_ev_ & IO_EV_ERR) != 0) {
         FD_SET(change.fd_, &m_setBackup.fdError);
       }
       break;

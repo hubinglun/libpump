@@ -416,7 +416,7 @@ private:
   
   virtual int postProcess();
   
-  /* FIXME 以下几个函数为IO事件的一级服务句柄. 用于测试临时放在此处, 后期考虑
+  /* FIXME 以下几个函数为IO事件的一级服务句柄. 用于测试临时放在此处, 后期考虑 \
    * 写到单独的网络层服务对象中*/
   int acceptHandle(PtrFD pFdAccept);
   

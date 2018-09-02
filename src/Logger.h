@@ -13,11 +13,12 @@ namespace nsp_std = ::std;
 namespace nsp_boost = ::boost;
 namespace nsp_google = ::google;
 
-namespace PUMP{
+namespace PUMP {
 
 class Logger {
 public:
   Logger();
+  
   ~Logger();
 };
 

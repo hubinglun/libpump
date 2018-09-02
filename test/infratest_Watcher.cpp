@@ -2,10 +2,14 @@
 // Created by yz on 18-9-2.
 //
 
-#include "infratest_Watcher.h"
+#include "CbMailbox.h"
+#include "Watcher.h"
+#include "Logger.h"
 
-int main() {
-  LOG(INFO) << "----------test-------------";
+using namespace PUMP;
+
+void test_IoWatcher(){
+  LOG(INFO) << "----------test_IoWatcher-------------";
   
   PtrCbMailbox pMailbox = nsp_boost::make_shared<CbQueueMailbox>();
   PtrCbMailboxMgr pCbMBMgr = nsp_boost::make_shared<ICbMailboxMgr>(pMailbox);
@@ -21,6 +25,10 @@ int main() {
   while (1) {
     watcher.doWatching();
   }
+}
+
+int main() {
+  test_IoWatcher();
   
   return 0;
 }

@@ -125,13 +125,15 @@ public:
   virtual size_t init();
 
 #ifdef _TEST_LEVEL_INFO
+  
   /**
    * @brief
    * @tparam T
    * @return
    */
-  template <class T>
+  template<class T>
   void test_createWatcher();
+
 #endif // _TEST_LEVEL_INFO
   
   /**
@@ -264,11 +266,13 @@ public:
   virtual void stop();
 
 #ifdef _TEST_LEVEL_INFO
+  
   /**
    * @fn void test_initWatcherList()
    * @brief 手动初始化 WatcherList
    */
   void test_initWatcherList();
+
 #endif // _TEST_LEVEL_INFO
 
 private:

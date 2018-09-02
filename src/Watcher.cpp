@@ -272,7 +272,10 @@ int IoWatcher::enableRecv(pump_fd_t fd) {
   }
   
   // 构造接受缓冲区
-  pIoFd->m_spIobufRecv.reset(new IoBuffer(IOBUF_LEN));
+  if (!pIoFd->m_spIobufRecv) {
+    pIoFd->m_spIobufRecv.reset(new IoBuffer(IOBUF_LEN));
+  }
+  
   return 0;
 }
 
@@ -361,7 +364,10 @@ int IoWatcher::enableSend(pump_fd_t fd) {
   }
   
   // 构造接受缓冲区
-  pIoFd->m_spIobufSend.reset(new IoBuffer(IOBUF_LEN));
+  if (!pIoFd->m_spIobufSend) {
+    pIoFd->m_spIobufSend.reset(new IoBuffer(IOBUF_LEN));
+  }
+  
   return 0;
 }
 
@@ -414,6 +420,9 @@ int IoWatcher::PostSend(pump_fd_t fd, const nsp_std::string &strMsg) {
     return -1;
   }
   
+  // 启用发送事件
+  this->enableSend(pIoFd->fd_);
+  
   if ((pIoFd->m_state != FD_STATE_CONNECTED)
       || (pIoFd->fd_ev_ & IO_EV_OUT == 0)
       || (!pIoFd->m_spIobufSend)) {
@@ -421,6 +430,7 @@ int IoWatcher::PostSend(pump_fd_t fd, const nsp_std::string &strMsg) {
     LOG(INFO) << "不允许使用发送缓冲区";
     return -1;
   }
+  // 向发送缓冲区投递数据
   pIoFd->m_spIobufSend->append(strMsg.c_str(), strMsg.size());
   return 0;
 }
@@ -509,6 +519,7 @@ int IoWatcher::dispatch() {
           && (((*it).re_fd_ev_ & IO_EV_OUT) != 0)) {
         switch (pIoFd->m_state) {
           case FD_STATE_CONNECTED: {
+            // FIXME 现在
             sendHandle(pIoFd);
           }
             break;
@@ -574,10 +585,6 @@ ACCEPT:
   
   // 允许读事件
   this->enableRecv(fdConnector);
-#ifdef _TEST_LEVEL_INFO
-  // 测试时, 才启用发送
-  this->enableSend(fdConnector);
-#endif // _TEST_LEVEL_INFO
   
   return 0;
 }
@@ -599,12 +606,13 @@ int IoWatcher::recvHandle(PtrFD pFdRecv) {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "warrning: 链接断开";
 #endif // _TEST_LEVEL_INFO
-    // TODO 链接断开处理
+    // FIXME [critical] 缺少链接断开处理
   } else {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "recv: " << buf;
 #endif // _TEST_LEVEL_INFO
     pFdRecv->m_spIobufRecv->append(buf, ret);
+
 #ifdef _TEST_LEVEL_INFO
     // test code: 接收一条数据发送一条
     nsp_std::string strMsg("Hello World!!!");
@@ -638,9 +646,9 @@ int IoWatcher::sendHandle(PtrFD pFdSend) {
     }
       break;
     case 0: {
-#ifdef _TEST_LEVEL_INFO
-      LOG(INFO) << "warning: 发送缓冲区无数据";
-#endif // _TEST_LEVEL_INFO
+      // 发送缓冲区
+      // FIXME 发送缓冲区为0, 应该禁止再让IO多路复用监听写事件
+      disableSend(pFdSend->fd_);
       return 0;
     }
       break;

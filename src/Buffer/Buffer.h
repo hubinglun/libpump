@@ -204,12 +204,14 @@ long Buffer<_Elem, _Alloc>::append(const char *szSrc, size_t iSLen) {
   m_aiBufSize += iSLen;
   unlockAppend();
 #ifdef _TEST_LEVEL_DEBUG
-  nsp_std::cout << "new op cost: " << tDiff1 << nsp_std::endl;
+  LOG(INFO) << "new op cost: " << tDiff1;
 #endif // _TEST_LEVEL_DEBUG
+
 #ifdef _TEST_LEVEL_INFO
   assert(m_iBegin <= m_iChunkSize);
 #endif //_TEST_LEVEL_INFO
-  return 1;
+  
+  return m_aiBufSize;
 }
 
 template<class _Elem,
@@ -328,7 +330,7 @@ public:
    * @param iLen 待拷贝长度
    * @return 实际拷贝长度
    */
-  long get(nsp_std::string & strOBuf, size_t iLen);
+  long get(nsp_std::string &strOBuf, size_t iLen);
 };
 
 typedef nsp_boost::scoped_ptr<IoBuffer> SPtrIoBuffer;
