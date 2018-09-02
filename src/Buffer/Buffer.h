@@ -18,6 +18,7 @@
 
 #include <boost/thread/mutex.hpp>
 #include <boost/atomic.hpp>
+#include <boost/scoped_ptr.hpp>
 
 #include "Logger.h"
 #include "KMP.h"
@@ -79,7 +80,7 @@ public:
   
   bool unlockErase();
 
-private:
+protected:
   /**
    * @var _Alloc * const m_alloc
    * @brief 内存分配器
@@ -308,6 +309,10 @@ bool Buffer<_Elem, _Alloc>::unlockAppend() {
 /**
  * @class class IoBuffer []
  * @brief Io 缓冲区对象, Buffer<> 全特化派生
+ *
+ * ----------------------------------------------------
+ * Change History:
+ * 20180902 [yangzheng] [add] long get(char * pOBuf, size_t iLen)
  */
 class IoBuffer
   : public Buffer<char> {
@@ -315,7 +320,18 @@ public:
   explicit IoBuffer(size_t iBufLen);
   
   ~IoBuffer();
+  
+  /**
+   * @fn long get(char outBuf, size_t iLen);
+   * @brief 从缓冲区拷贝一段数据出来
+   * @param pOBuf 输出缓冲区
+   * @param iLen 待拷贝长度
+   * @return 实际拷贝长度
+   */
+  long get(nsp_std::string & strOBuf, size_t iLen);
 };
+
+typedef nsp_boost::scoped_ptr<IoBuffer> SPtrIoBuffer;
 
 }
 
