@@ -336,7 +336,7 @@ typedef nsp_boost::shared_ptr<CbMailbox> PtrCbMailbox;
  * @class CbMailbox [CbMailbox.h]
  * @brief 回调函数邮箱类, 负责调度回调函数
  */
-PUMP_ABSTRACT
+PUMP_IMPLEMENT
 class CbQueueMailbox
   : public CbMailbox {
 public:

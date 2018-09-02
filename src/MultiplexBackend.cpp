@@ -29,13 +29,13 @@ int Select::update(const IoFdCtl &change) {
       if (m_fds.find(change.fd_) != m_fds.end()) {
         return -1;
       }
-      if (change.fd_ev_ & IO_EV_IN != 0) {
+      if ((change.fd_ev_ & IO_EV_IN) != 0) {
         FD_SET(change.fd_, &m_setBackup.fdRead);
       }
-      if (change.fd_ev_ & IO_EV_OUT != 0) {
+      if ((change.fd_ev_ & IO_EV_OUT) != 0) {
         FD_SET(change.fd_, &m_setBackup.fdWrite);
       }
-      if (change.fd_ev_ & IO_EV_ERR != 0) {
+      if ((change.fd_ev_ & IO_EV_ERR) != 0) {
         FD_SET(change.fd_, &m_setBackup.fdError);
       }
       // 添加到监听fd集合
@@ -129,7 +129,7 @@ int Select::wait(IoFdRetList &fdRetList, timeval &tmv) {
       } else { // fd 有事件发生
         IoFdRet ioFdRet;
         ioFdRet.fd_ = *it;
-        ioFdRet.fd_ev_ = re_ev;
+        ioFdRet.re_fd_ev_ = re_ev;
         // 放入 fd 返回集合
         fdRetList.push_back(ioFdRet);
       }

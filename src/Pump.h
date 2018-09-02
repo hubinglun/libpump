@@ -20,7 +20,7 @@
 
 #include "pumpdef.h"
 #include "Logger.h"
-#include "Wather.h"
+#include "Watcher.h"
 #include "CbMailbox.h"
 
 namespace nsp_std = ::std;
@@ -33,15 +33,15 @@ namespace nsp_boost = ::boost;
 namespace PUMP {
 
 /** Watcher 内存托管 */
-typedef nsp_boost::shared_ptr<Wather> PtrWatcher;
+typedef nsp_boost::shared_ptr<Watcher> PtrWatcher;
 /** Watcher 内存托管 */
-typedef nsp_boost::weak_ptr<Wather> WPtrWatcher;
+typedef nsp_boost::weak_ptr<Watcher> WPtrWatcher;
 
 /**
  * @class WatcherContainer []
  * @brief Watcher 对象的容器抽象对象
  *
- * 用户必须派生 WatcherContainer 对象实现接口, 并实现存储 Wather 的对象.
+ * 用户必须派生 WatcherContainer 对象实现接口, 并实现存储 Watcher 的对象.
  * Watcher 存储逻辑结构可以使任意的
  *
  * > WARNING 现阶段不支持Watcher动态创建
@@ -227,9 +227,9 @@ protected:
   PtrCbMailboxEvoker m_pMbEvoker;
   /**
    * @var PtrWatcherContainer m_pWatchers
-   * @brief 存放 Wather 对象指针的数组对象
+   * @brief 存放 Watcher 对象指针的数组对象
    *
-   * * WatcherContainer 是存放 Wather 对象的容器, 其指针对象必须由 Pump 类的派生类 \
+   * * WatcherContainer 是存放 Watcher 对象的容器, 其指针对象必须由 Pump 类的派生类 \
    * 指向一个 WatcherContainer 的实现类
    */
   PtrWatcherContainer m_pWatchers;
@@ -280,7 +280,7 @@ private:
   /**
    * @brief watching()
    *
-   * 遍历 m_watchers 数组, 逐个调用 Wather 对象的三个阶段函数
+   * 遍历 m_watchers 数组, 逐个调用 Watcher 对象的三个阶段函数
    */
   virtual size_t watching();
   

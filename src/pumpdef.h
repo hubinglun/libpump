@@ -114,10 +114,10 @@ enum TimerType {
   TMTYPE_ONETIME,   //! 一次性定时器
   TMTYPE_PERIODIC   //! 周期性定时器
 };
-
-const unsigned short IO_EV_IN = 0x001; //! io fd 发生可读事件
-const unsigned short IO_EV_OUT = 0x002; //! io fd 发生可写事件
-const unsigned short IO_EV_ERR = 0x004; //! io fd 发生异常事件
+const unsigned short IO_EV_NONE = 0x000;    //! io fd 无监听事件
+const unsigned short IO_EV_IN = 0x001;      //! io fd 发生可读事件
+const unsigned short IO_EV_OUT = 0x002;     //! io fd 发生可写事件
+const unsigned short IO_EV_ERR = 0x004;     //! io fd 发生异常事件
 
 /**
  * @enum FdCtlTyge

@@ -32,3 +32,6 @@ target_link_libraries(infratest_pump ${all_libs} pump)
 
 add_executable(infratest_Buffer test/infratest_Buffer.cpp)
 target_link_libraries(infratest_Buffer ${all_libs} pump)
+
+add_executable(infratest_Watcher test/infratest_Watcher.cpp)
+target_link_libraries(infratest_Watcher ${all_libs} pump)

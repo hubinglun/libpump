@@ -55,7 +55,7 @@ struct IoFdRet {
    * @var unsigned short fd_ev_
    * @brief 发生事件, 必须是 IO_EV_XXX
    */
-  unsigned short fd_ev_;
+  unsigned short re_fd_ev_;
 };
 
 typedef nsp_std::vector<IoFdRet> IoFdRetList;
