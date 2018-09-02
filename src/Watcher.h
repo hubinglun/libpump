@@ -19,16 +19,19 @@
 
 #ifdef linux
 #include <unistd.h>
+#include <sys/socket.h>
 #endif // linux
 
 #include <boost/weak_ptr.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 
 #include "pumpdef.h"
 #include "CbMailbox.h"
 #include "Event.h"
 #include "MultiplexBackend.h"
 #include "Logger.h"
+#include "Buffer/Buffer.h"
 
 namespace nsp_boost = ::boost;
 
@@ -39,17 +42,28 @@ namespace PUMP {
  * @brief Event 事件容器
  *
  * Watcher 对象中存放注册 Event 事件的容器
+ *
+ * FIXME 事件容器设计的不太好, 比如增删改接口太过简单
  */
 PUMP_ABSTRACT
 class EventContainer
   : public nsp_boost::noncopyable {
 public:
   EventContainer() {}
+  
   virtual ~EventContainer() {}
+  
   virtual size_t runAll() = 0;
+  
+  virtual void insert(nsp_std::string &strName, PtrEvent pEv) = 0;
+  
+  virtual void erase(nsp_std::string &strName) = 0;
+  
+  virtual PtrEvent at(nsp_std::string &strName) = 0;
 };
 
 typedef nsp_boost::shared_ptr<EventContainer> PtrEvContainer;
+typedef nsp_boost::scoped_ptr<EventContainer> SPtrEvContainer;
 
 /**
  * @class PreEvContainer
@@ -59,8 +73,11 @@ PUMP_ABSTRACT
 class PrePostEvContainer {
 public:
   PrePostEvContainer() {}
+  
   virtual ~PrePostEvContainer() {}
+  
   virtual size_t runAll() = 0;
+
 private:
   /**
    * @var PtrEvContainer m_level0
@@ -90,11 +107,11 @@ public:
   
   ~EvList() {}
   
-  void insert(nsp_std::string & strName, PtrEvent pEv);
+  virtual void insert(nsp_std::string &strName, PtrEvent pEv);
   
-  void erase(nsp_std::string & strName);
+  virtual void erase(nsp_std::string &strName);
   
-  PtrEvent at(nsp_std::string & strName);
+  virtual PtrEvent at(nsp_std::string &strName);
 
 private:
   virtual size_t runAll() { return 0; }
@@ -106,20 +123,21 @@ private:
 typedef nsp_boost::shared_ptr<EvList> PtrEvList;
 
 /**
- * @class Wather []
+ * @class Watcher []
  * @brief 事件观察者对象
  *
  * 注册, 监听, 激活, 处理(投递)事件
  */
 PUMP_ABSTRACT
-class Wather {
+class Watcher
+  : public nsp_boost::noncopyable {
 public:
-  Wather() {}
+  Watcher() {}
   
   // FIXME 目前没有解决pMbMgr参数由谁传入的问题
-  Wather(PtrCbMailboxMgr pMbMgr);
+  explicit Watcher(PtrCbMailboxMgr pMbMgr);
   
-  ~Wather() {}
+  virtual ~Watcher() {}
 
 public:
   virtual void doWatching(/* FIXME 参数是否需要? */) = 0;
@@ -129,11 +147,11 @@ public:
   PtrArg getArgOut();
 
 private:
-  virtual void preProcess() = 0;
+  virtual int preProcess() = 0;
   
   virtual int dispatch() = 0;
   
-  virtual void postProcess() = 0;
+  virtual int postProcess() = 0;
 
 private:
   //! < Watcher 对象名
@@ -150,19 +168,21 @@ private:
   PtrEvContainer m_pEvContainer;
   /**
    * @var PtrArg m_argIn
-   * @brief Wather 对象的输入参数
+   * @brief Watcher 对象的输入参数
    *
-   * 指针对象, 因此可以是任何类型的数据, 由 Wather 对象的实现派生解释
+   * 指针对象, 因此可以是任何类型的数据, 由 Watcher 对象的实现派生解释
    */
   PtrArg m_argIn;
   /**
    * @var PtrArg m_argOut
-   * @brief Wather 对象的输出
+   * @brief Watcher 对象的输出
    *
-   * 指针对象, 因此可以是任何类型的数据, 由 Wather 对象的实现派生解释
+   * 指针对象, 因此可以是任何类型的数据, 由 Watcher 对象的实现派生解释
    */
   PtrArg m_argOut;
 };
+
+typedef nsp_boost::shared_ptr<Watcher> PtrWatcher;
 
 /**
  * @struct IoFd []
@@ -191,15 +211,50 @@ struct IoFd {
    */
   unsigned short re_fd_ev_;
   /**
-   * @var PtrEvContainer m_pEvents
-   * @brief io文件描述符的注册事件容器
+   * @var FdState m_state
+   * @brief io文件描述符的生命周期状态
+   */
+  FdState m_state;
+  /**
+   * @var EvList m_Events
+   * @brief io文件描述符的注册事件容器, 不允许拷贝和移动
    */
   PtrEvContainer m_pEvents;
   /**
- * @var PtrEvContainer m_pEvents
- * @brief io文件描述符的注册事件容器
- */
-  FdState m_state;
+   * @var SPtrIoBuffer m_spIobufRecv
+   * @brief 输入缓冲区
+   * 注: 仅io套接字有效
+   */
+  SPtrIoBuffer m_spIobufRecv;
+  /**
+   * @var SPtrIoBuffer m_spIobufSend
+   * @brief 输出缓冲区
+   * 注: 仅io套接字有效
+   */
+  SPtrIoBuffer m_spIobufSend;
+  
+  /**
+   * @fn 构造函数
+   * @brief 主要是初始化 m_pEvents 对象
+   */
+  IoFd()
+    : fd_(-1),
+      fd_ev_(IO_EV_NONE),
+      re_fd_ev_(IO_EV_NONE),
+      m_state(FD_STATE_INIT),
+      m_pEvents(nsp_boost::make_shared<EvList>()) {}
+  
+  ~IoFd() {
+    this->close();
+  }
+  
+  int close() {
+    return ::close(fd_);
+  }
+  
+  int shutdown(int how) {
+    return ::shutdown(fd_, how);
+  }
 };
 
 typedef nsp_boost::shared_ptr<IoFd> PtrFD;
@@ -253,14 +308,17 @@ private:
  * @brief 接收到新连接请求时回调对象
  */
 class OnAccept
-  : public CbFnWithoutReturn{
-  typedef nsp_boost::function<void(void)/*FIXME 确定参数列表*/> func_t;
+  : public CbFnWithoutReturn {
+  typedef nsp_boost::function<void(pump_fd_t fd)/*FIXME 确定参数列表*/> func_t;
 public:
   OnAccept() {}
+  
   void operator()() {
-    m_fn();
+    m_fn(m_arg1);
   }
+  
   func_t m_fn;
+  pump_fd_t m_arg1;
 };
 
 typedef nsp_boost::shared_ptr<OnAccept> PfnOnAccept;
@@ -270,13 +328,15 @@ typedef nsp_boost::shared_ptr<OnAccept> PfnOnAccept;
  * @brief 接收到新数据时回调对象
  */
 class OnRecv
-  : public CbFnWithoutReturn{
+  : public CbFnWithoutReturn {
   typedef nsp_boost::function<void(void)/*FIXME 确定参数列表*/> func_t;
 public:
   OnRecv() {}
+  
   void operator()() {
     m_fn();
   }
+  
   func_t m_fn;
 };
 
@@ -287,58 +347,82 @@ typedef nsp_boost::shared_ptr<OnRecv> PfnOnRecv;
  * @brief 成功发送数据后回调对象
  */
 class OnSend
-  : public CbFnWithoutReturn{
+  : public CbFnWithoutReturn {
   typedef nsp_boost::function<void(void)/*FIXME 确定参数列表*/> func_t;
 public:
   OnSend() {}
+  
   void operator()() {
     m_fn();
   }
+  
   func_t m_fn;
 };
 
 typedef nsp_boost::shared_ptr<OnSend> PfnOnSend;
 
 /**
- * @class IoWather []
- * @brief Wather对象的一个实现,主要用于单元测试
+ * @class IoWatcher []
+ * @brief Watcher对象的一个实现,主要用于单元测试
+ * FIXME 仅用于测试,之后应该改为派生 FdBaseWatcher
  */
 PUMP_IMPLEMENT
-class IoWather
-  : public Wather {
+class IoWatcher
+  : public Watcher {
 public:
-  IoWather();
+#define IOBUF_LEN 128
   
-  IoWather(PtrCbMailboxMgr pMbMgr);
+  IoWatcher();
   
-  virtual ~IoWather();
+  explicit IoWatcher(PtrCbMailboxMgr pMbMgr);
+  
+  virtual ~IoWatcher();
 
 public:
   virtual void doWatching();
+  
   void init();
-  int newAccept(const char* szIp,int iPort,
+  
+  int newAccept(const char *szIp, int iPort,
                 PfnOnAccept onAccept,
                 PfnOnRecv onRecv,
                 PfnOnSend onSend);
+  
   int enableAccept(pump_fd_t fd);
+  
   int disableAccept(pump_fd_t fd);
+  
   /*void newConnection(const char* szIp,int iPort,
                      PfnOnRecv onRecv,
                      PfnOnSend onSend);*/
   int enableRecv(pump_fd_t fd);
+  
   int disableRecv(pump_fd_t fd);
+  
   int enableSend(pump_fd_t fd);
+  
   int disableSend(pump_fd_t fd);
-  void PostSend(/* FIXME 需要决定参数 */);
-  void PostShutdown(/* FIXME 需要决定参数 */);
-  void PostClose(/* FIXME 需要决定参数 */);
+  
+  int PostSend(pump_fd_t fd, const nsp_std::string &strMsg);
+  
+  int PostShutdown(pump_fd_t fd);
+  
+  int PostClose(pump_fd_t fd);
 
 private:
-  virtual void preProcess();
+  virtual int preProcess();
   
   virtual int dispatch();
   
-  virtual void postProcess();
+  virtual int postProcess();
+  
+  /* FIXME 以下几个函数为IO事件的一级服务句柄. 用于测试临时放在此处, 后期考虑
+   * 写到单独的网络层服务对象中*/
+  int acceptHandle(PtrFD pFdAccept);
+  
+  int recvHandle(PtrFD pFdRecv);
+  
+  int sendHandle(PtrFD pFdSend);
 
 private:
   PtrPreEvContainer m_pPreEvents;
