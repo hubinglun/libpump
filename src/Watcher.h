@@ -146,14 +146,14 @@ public:
   
   PtrArg getArgOut();
 
-private:
+protected:
   virtual int preProcess() = 0;
   
   virtual int dispatch() = 0;
   
   virtual int postProcess() = 0;
 
-private:
+protected:
   //! < Watcher 对象名
   nsp_std::string m_strName;
   /**
@@ -183,6 +183,49 @@ private:
 };
 
 typedef nsp_boost::shared_ptr<Watcher> PtrWatcher;
+
+/**
+ * @class NetService
+ * @brief 与 IoFd 绑定的服务对象
+ */
+PUMP_ABSTRACT
+class Service
+  : public nsp_boost::noncopyable {
+public:
+  Service() {}
+  
+  virtual ~Service() {}
+};
+
+typedef nsp_boost::shared_ptr<Service> PtrService;
+
+class IoWatcher;
+
+typedef nsp_boost::shared_ptr<IoWatcher> PtrIoWatcher;
+
+struct IoFd;
+typedef nsp_boost::shared_ptr<IoFd> PtrFD;
+
+/**
+ * @class NetService
+ * @brief 与 IoFd 绑定的服务对象
+ */
+PUMP_ABSTRACT
+class TcpService
+  : public Service {
+public:
+  TcpService() {}
+  
+  virtual ~TcpService() {}
+
+//  virtual int acceptCb(PtrFD pFdAccept) = 0;
+  
+  virtual int recvCb(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData=PtrVoid()) = 0;
+  
+  virtual int sendCb(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData=PtrVoid()) = 0;
+};
+
+typedef nsp_boost::shared_ptr<TcpService> PtrTcpService;
 
 /**
  * @struct IoFd []
@@ -216,22 +259,32 @@ struct IoFd {
    */
   FdState m_state;
   /**
-   * @var EvList m_Events
+   * @var PtrEvContainer m_pEvents
    * @brief io文件描述符的注册事件容器, 不允许拷贝和移动
    */
   PtrEvContainer m_pEvents;
   /**
-   * @var SPtrIoBuffer m_spIobufRecv
+   * @var PtrTcpService m_pTcpService
+   * @brief Tcp 层的服务对象, 主要是传递用户的回调函数
+   */
+  PtrTcpService m_pTcpService;
+  /**
+   * @var PtrIoBuffer m_pIobufRecv
    * @brief 输入缓冲区
    * 注: 仅io套接字有效
    */
-  SPtrIoBuffer m_spIobufRecv;
+  PtrIoBuffer m_pIobufRecv;
   /**
-   * @var SPtrIoBuffer m_spIobufSend
+   * @var PtrIoBuffer m_pIobufSend
    * @brief 输出缓冲区
    * 注: 仅io套接字有效
    */
-  SPtrIoBuffer m_spIobufSend;
+  PtrIoBuffer m_pIobufSend;
+  /**
+   * @var PtrVoid m_pData
+   * @brief 用户数据, 一般为结构体
+   */
+  PtrVoid m_pData;
   
   /**
    * @fn 构造函数
@@ -256,8 +309,6 @@ struct IoFd {
     return ::shutdown(fd_, how);
   }
 };
-
-typedef nsp_boost::shared_ptr<IoFd> PtrFD;
 
 /**
  * @class FdContainer []
@@ -388,13 +439,16 @@ public:
                 PfnOnRecv onRecv,
                 PfnOnSend onSend);
   
+  int newAccept(const char *szIp, int iPort,
+                PtrTcpService pTcpService);
+  
   int enableAccept(pump_fd_t fd);
   
   int disableAccept(pump_fd_t fd);
   
   /*void newConnection(const char* szIp,int iPort,
-                     PfnOnRecv onRecv,
-                     PfnOnSend onSend);*/
+                     PtrTcpService pTcpService);*/
+  
   int enableRecv(pump_fd_t fd);
   
   int disableRecv(pump_fd_t fd);

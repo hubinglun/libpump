@@ -128,10 +128,65 @@ int IoWatcher::newAccept(const char *szIp, int iPort,
     pEvSend->strName_ = "OnSend";
     pEvSend->emEvPriority_ = EVPRIOR_DEFAULT;
     pEvSend->emEvState_ = EVSTATE_INIT;
-    pEvSend->pEvCallback_ = onRecv;
+    pEvSend->pEvCallback_ = onSend;
     pEvSend->fd_ = fd;
     pIoFd->m_pEvents->insert(pEvSend->strName_, pEvSend);
   }
+  
+  IoFdCtl change;
+  change.fd_ = fd;
+  change.type_ = FD_CTL_ADD;
+  change.fd_ev_ = IO_EV_IN;
+  
+  if (m_pBackend->update(change) == -1) {
+    return -1;
+  }
+  
+  pIoFd->m_state = FD_STATE_LISTENED;
+  pIoFd->fd_ev_ = IO_EV_IN;
+  m_pFds->insert(pIoFd);
+  
+  return 0;
+}
+
+int IoWatcher::newAccept(const char *szIp, int iPort,
+                         PtrTcpService pTcpService) {
+  pump_fd_t fd;
+  sockaddr_in servaddr;
+  
+  fd = ::socket(AF_INET, SOCK_STREAM, 0);
+  
+  if (fd == -1) {
+    LOG(INFO) << stderr << "create socket fail, erron: %d ,reason: %s\n" <<
+              errno << strerror(errno);
+    return -1;
+  }
+  
+  /*一个端口释放后会等待两分钟之后才能再被使用，SO_REUSEADDR是让端口释放后立即就可以被再次使用*/
+  int reuse = 1;
+  if (::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) == -1) {
+    return -1;
+  }
+  
+  bzero(&servaddr, sizeof(servaddr));
+  servaddr.sin_family = AF_INET;
+  ::inet_pton(AF_INET, szIp, &servaddr.sin_addr);
+  servaddr.sin_port = ::htons(iPort);
+  
+  if (::bind(fd, (struct sockaddr *) &servaddr, sizeof(servaddr)) == -1) {
+    LOG(INFO) << "bind() error: " << errno;
+    return -1;
+  }
+  
+  if (::listen(fd, 5/* FIXME 应该由参数决定 */) == -1) {
+    LOG(INFO) << "listen() error: " << errno;
+    return -1;
+  }
+  
+  PtrFD pIoFd = nsp_boost::make_shared<IoFd>();
+  pIoFd->fd_ = fd;
+  
+  pIoFd->m_pTcpService = pTcpService;
   
   IoFdCtl change;
   change.fd_ = fd;
@@ -272,8 +327,8 @@ int IoWatcher::enableRecv(pump_fd_t fd) {
   }
   
   // 构造接受缓冲区
-  if (!pIoFd->m_spIobufRecv) {
-    pIoFd->m_spIobufRecv.reset(new IoBuffer(IOBUF_LEN));
+  if (!pIoFd->m_pIobufRecv) {
+    pIoFd->m_pIobufRecv.reset(new IoBuffer(IOBUF_LEN));
   }
   
   return 0;
@@ -364,8 +419,8 @@ int IoWatcher::enableSend(pump_fd_t fd) {
   }
   
   // 构造接受缓冲区
-  if (!pIoFd->m_spIobufSend) {
-    pIoFd->m_spIobufSend.reset(new IoBuffer(IOBUF_LEN));
+  if (!pIoFd->m_pIobufSend) {
+    pIoFd->m_pIobufSend.reset(new IoBuffer(IOBUF_LEN));
   }
   
   return 0;
@@ -425,13 +480,13 @@ int IoWatcher::PostSend(pump_fd_t fd, const nsp_std::string &strMsg) {
   
   if ((pIoFd->m_state != FD_STATE_CONNECTED)
       || (pIoFd->fd_ev_ & IO_EV_OUT == 0)
-      || (!pIoFd->m_spIobufSend)) {
+      || (!pIoFd->m_pIobufSend)) {
     /* FIXME 设置错误码 */
     LOG(INFO) << "不允许使用发送缓冲区";
     return -1;
   }
   // 向发送缓冲区投递数据
-  pIoFd->m_spIobufSend->append(strMsg.c_str(), strMsg.size());
+  pIoFd->m_pIobufSend->append(strMsg.c_str(), strMsg.size());
   return 0;
 }
 
@@ -569,7 +624,8 @@ ACCEPT:
   }
 
 #ifdef _TEST_LEVEL_INFO
-  LOG(INFO) << "accept a new client: " << inet_ntoa(addrConnector.sin_addr) << ":" << addrConnector.sin_port;
+  LOG(INFO) << "accept a new client: " << inet_ntoa(addrConnector.sin_addr)
+            << ":" << ::ntohs(addrConnector.sin_port);
 #endif // _TEST_LEVEL_INFO
   
   // 构造新的IoFd, 将新的连接描述符添加到数组中
@@ -581,6 +637,8 @@ ACCEPT:
   pFdConnector->m_pEvents->insert(strOnSend, pFdAccept->m_pEvents->at(strOnSend));
   pFdConnector->m_state = FD_STATE_CONNECTED;
   pFdConnector->fd_ev_ = IO_EV_NONE;
+  // [20180907] 新加
+  pFdConnector->m_pTcpService = pFdAccept->m_pTcpService;
   m_pFds->insert(pFdConnector);
   
   // 允许读事件
@@ -611,12 +669,19 @@ int IoWatcher::recvHandle(PtrFD pFdRecv) {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "recv: " << buf;
 #endif // _TEST_LEVEL_INFO
-    pFdRecv->m_spIobufRecv->append(buf, ret);
+    
+    // 压入接收缓冲区
+    pFdRecv->m_pIobufRecv->append(buf, ret);
+    
+    if (pFdRecv->m_pTcpService == NULL) {
+      return -1;
+    }
+    pFdRecv->m_pTcpService->recvCb(*this, pFdRecv);
 
 #ifdef _TEST_LEVEL_INFO
     // test code: 接收一条数据发送一条
-    nsp_std::string strMsg("Hello World!!!");
-    this->PostSend(pFdRecv->fd_, strMsg);
+//    nsp_std::string strMsg("Hello World!!!");
+//    this->PostSend(pFdRecv->fd_, strMsg);
 #endif // _TEST_LEVEL_INFO
   }
   
@@ -635,7 +700,7 @@ int IoWatcher::sendHandle(PtrFD pFdSend) {
   // 从发送缓冲区拷贝要发送数据
   // FIXME 拷贝长度用宏替换
   nsp_std::string strSendBuf;
-  long iWillSend = pFdSend->m_spIobufSend->get(strSendBuf, 1024);
+  long iWillSend = pFdSend->m_pIobufSend->get(strSendBuf, 1024);
   switch (iWillSend) {
     case -1: {
 #ifdef _TEST_LEVEL_INFO
@@ -647,7 +712,7 @@ int IoWatcher::sendHandle(PtrFD pFdSend) {
       break;
     case 0: {
       // 发送缓冲区
-      // FIXME 发送缓冲区为0, 应该禁止再让IO多路复用监听写事件
+      // FIXME 发送缓冲区为0, 应该禁止再让IO多路复用监听写事件 [FIXED]
       disableSend(pFdSend->fd_);
       return 0;
     }
@@ -662,7 +727,21 @@ int IoWatcher::sendHandle(PtrFD pFdSend) {
 #ifdef _TEST_LEVEL_INFO
         LOG(INFO) << "send: " << strSendBuf;
 #endif // _TEST_LEVEL_INFO
-        pFdSend->m_spIobufSend->erase(iRealSend);
+        
+        // 发送成功就要从缓冲区删除
+        pFdSend->m_pIobufSend->erase(iRealSend);
+        
+        // FIXME 用 TcpService 对象来处理 [FIXED]
+//        // 向函数邮箱投递一个
+//        nsp_std::string strOnSend = "OnSend";
+//        PtrEvent pEv = pFdSend->m_pEvents->at(strOnSend);
+//        PfnOnSend pSend = nsp_boost::dynamic_pointer_cast<OnSend>(pEv->pEvCallback_);
+//        m_pMbMgr->insert(EVPRIOR_DEFAULT, pSend);
+        
+        if (pFdSend->m_pTcpService == NULL) {
+          return -1;
+        }
+        pFdSend->m_pTcpService->sendCb(*this, pFdSend);
       }
     }
   }
