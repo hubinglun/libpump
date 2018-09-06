@@ -333,7 +333,7 @@ public:
   long get(nsp_std::string &strOBuf, size_t iLen);
 };
 
-typedef nsp_boost::scoped_ptr<IoBuffer> SPtrIoBuffer;
+typedef nsp_boost::shared_ptr<IoBuffer> PtrIoBuffer;
 
 }
 

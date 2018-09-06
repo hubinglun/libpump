@@ -11,6 +11,10 @@
 #ifndef LIBPUMP_PUMPDEF_H
 #define LIBPUMP_PUMPDEF_H
 
+#include <boost/shared_ptr.hpp>
+
+namespace nsp_boost = ::boost;
+
 namespace PUMP {
 
 #define PUMP_ABSTRACT  /** 修饰抽象类 */
@@ -146,6 +150,8 @@ enum FdState {
   FD_STATE_SHUTDOWNED,  //! fd 半闭态
   FD_STATE_CLOSED       //! fd 关闭态
 };
+
+typedef nsp_boost::shared_ptr<void> PtrVoid;
 
 }
 
