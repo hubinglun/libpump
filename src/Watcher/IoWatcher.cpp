@@ -1,38 +1,10 @@
-/**
- * @file Watcher.cpp
- * @brief Watcher 相关对象的实现
- *
- * @author YangZheng 263693992@qq.com
- * @version 1.0
- * @date 2018.07.27
- */
-#include "Watcher.h"
+//
+// Created by yz on 18-9-8.
+//
 
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/select.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include "IoWatcher.h"
 
 namespace PUMP {
-
-////////////////////////////////////////////////
-//                   Watcher
-////////////////////////////////////////////////
-
-Watcher::Watcher(PtrCbMailboxMgr pMbMgr)
-  : m_pMbMgr(pMbMgr) {
-  
-}
-
-void Watcher::setArgIn(PtrArg _IN) {
-  m_argIn = _IN;
-}
-
-PtrArg Watcher::getArgOut() {
-  return m_argOut;
-}
 
 ////////////////////////////////////////////////
 //                   IoWatcher
@@ -41,11 +13,13 @@ PtrArg Watcher::getArgOut() {
 IoWatcher::IoWatcher() {}
 
 IoWatcher::IoWatcher(PtrCbMailboxMgr pMbMgr)
-  : Watcher(pMbMgr) {}
+  : FdBaseWatcher(pMbMgr) {}
 
 IoWatcher::~IoWatcher() {}
 
 void IoWatcher::init() {
+  m_pEvents = nsp_boost::make_shared<EvList>();
+  m_pPostEvents = nsp_boost::make_shared<PrePostList>();
   // FIXME 前置及后置事件容器未初始化
   m_pFds = nsp_boost::make_shared<FdHashTable>();
   m_pBackend = nsp_boost::make_shared<Select>();
@@ -56,97 +30,6 @@ void IoWatcher::doWatching() {
   preProcess();
   dispatch();
   postProcess();
-}
-
-int IoWatcher::newAccept(const char *szIp, int iPort,
-                         PfnOnAccept onAccept,
-                         PfnOnRecv onRecv,
-                         PfnOnSend onSend) {
-  pump_fd_t fd;
-  sockaddr_in servaddr;
-  
-  fd = ::socket(AF_INET, SOCK_STREAM, 0);
-  
-  if (fd == -1) {
-    LOG(INFO) << stderr << "create socket fail, erron: %d ,reason: %s\n" <<
-              errno << strerror(errno);
-    return -1;
-  }
-  
-  /*一个端口释放后会等待两分钟之后才能再被使用，SO_REUSEADDR是让端口释放后立即就可以被再次使用*/
-  int reuse = 1;
-  if (::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) == -1) {
-    return -1;
-  }
-  
-  bzero(&servaddr, sizeof(servaddr));
-  servaddr.sin_family = AF_INET;
-  ::inet_pton(AF_INET, szIp, &servaddr.sin_addr);
-  servaddr.sin_port = ::htons(iPort);
-  
-  if (::bind(fd, (struct sockaddr *) &servaddr, sizeof(servaddr)) == -1) {
-    LOG(INFO) << "bind() error: " << errno;
-    return -1;
-  }
-  
-  if (::listen(fd, 5/* FIXME 应该由参数决定 */) == -1) {
-    LOG(INFO) << "listen() error: " << errno;
-    return -1;
-  }
-  
-  PtrFD pIoFd = nsp_boost::make_shared<IoFd>();
-  pIoFd->fd_ = fd;
-  
-  /* 构造OnAccept回调对象 */
-  if (!onAccept->m_fn.empty()) {
-    PtrIoEvent pEvAccept = nsp_boost::make_shared<IoEvent>();
-    // FIXME 应该使用构造函数构造, 事件名称应该与事件类型绑定
-    pEvAccept->strName_ = "OnAccept";
-    pEvAccept->emEvPriority_ = EVPRIOR_DEFAULT;
-    pEvAccept->emEvState_ = EVSTATE_INIT;
-    pEvAccept->pEvCallback_ = onAccept;
-    pEvAccept->fd_ = fd;
-    pIoFd->m_pEvents->insert(pEvAccept->strName_, pEvAccept);
-  }
-  
-  /* 构造OnRecv回调对象 */
-  if (!onRecv->m_fn.empty()) {
-    PtrIoEvent pEvRecv = nsp_boost::make_shared<IoEvent>();
-    // FIXME 应该使用构造函数构造, 事件名称应该与事件类型绑定
-    pEvRecv->strName_ = "OnRecv";
-    pEvRecv->emEvPriority_ = EVPRIOR_DEFAULT;
-    pEvRecv->emEvState_ = EVSTATE_INIT;
-    pEvRecv->pEvCallback_ = onRecv;
-    pEvRecv->fd_ = fd;
-    pIoFd->m_pEvents->insert(pEvRecv->strName_, pEvRecv);
-  }
-  
-  /* 构造OnSend回调对象 */
-  if (!onSend->m_fn.empty()) {
-    PtrIoEvent pEvSend = nsp_boost::make_shared<IoEvent>();
-    // FIXME 应该使用构造函数构造, 事件名称应该与事件类型绑定
-    pEvSend->strName_ = "OnSend";
-    pEvSend->emEvPriority_ = EVPRIOR_DEFAULT;
-    pEvSend->emEvState_ = EVSTATE_INIT;
-    pEvSend->pEvCallback_ = onSend;
-    pEvSend->fd_ = fd;
-    pIoFd->m_pEvents->insert(pEvSend->strName_, pEvSend);
-  }
-  
-  IoFdCtl change;
-  change.fd_ = fd;
-  change.type_ = FD_CTL_ADD;
-  change.fd_ev_ = IO_EV_IN;
-  
-  if (m_pBackend->update(change) == -1) {
-    return -1;
-  }
-  
-  pIoFd->m_state = FD_STATE_LISTENED;
-  pIoFd->fd_ev_ = IO_EV_IN;
-  m_pFds->insert(pIoFd);
-  
-  return 0;
 }
 
 int IoWatcher::newAccept(const char *szIp, int iPort,
@@ -183,7 +66,7 @@ int IoWatcher::newAccept(const char *szIp, int iPort,
     return -1;
   }
   
-  PtrFD pIoFd = nsp_boost::make_shared<IoFd>();
+  PtrIoFd pIoFd = nsp_boost::make_shared<IoFd>();
   pIoFd->fd_ = fd;
   
   pIoFd->m_pTcpService = pTcpService;
@@ -192,7 +75,6 @@ int IoWatcher::newAccept(const char *szIp, int iPort,
   change.fd_ = fd;
   change.type_ = FD_CTL_ADD;
   change.fd_ev_ = IO_EV_IN;
-  
   if (m_pBackend->update(change) == -1) {
     return -1;
   }
@@ -205,7 +87,7 @@ int IoWatcher::newAccept(const char *szIp, int iPort,
 }
 
 int IoWatcher::enableAccept(pump_fd_t fd) {
-  PtrFD pIoFd = m_pFds->get(fd);
+  PtrIoFd pIoFd = nsp_boost::dynamic_pointer_cast<IoFd>(m_pFds->get(fd));
   if (pIoFd == NULL) {
     /* FIXME 设置错误码 */
     LOG(INFO) << "未找到fd";
@@ -245,7 +127,7 @@ int IoWatcher::enableAccept(pump_fd_t fd) {
 }
 
 int IoWatcher::disableAccept(pump_fd_t fd) {
-  PtrFD pIoFd = m_pFds->get(fd);
+  PtrIoFd pIoFd = nsp_boost::dynamic_pointer_cast<IoFd>(m_pFds->get(fd));
   if (pIoFd == NULL) {
     /* FIXME 设置错误码 */
     LOG(INFO) << "未找到fd";
@@ -284,7 +166,7 @@ int IoWatcher::disableAccept(pump_fd_t fd) {
 }
 
 int IoWatcher::enableRecv(pump_fd_t fd) {
-  PtrFD pIoFd = m_pFds->get(fd);
+  PtrIoFd pIoFd = nsp_boost::dynamic_pointer_cast<IoFd>(m_pFds->get(fd));
   if (pIoFd == NULL) {
     /* FIXME 设置错误码 */
     LOG(INFO) << "未找到fd";
@@ -335,7 +217,7 @@ int IoWatcher::enableRecv(pump_fd_t fd) {
 }
 
 int IoWatcher::disableRecv(pump_fd_t fd) {
-  PtrFD pIoFd = m_pFds->get(fd);
+  PtrIoFd pIoFd = nsp_boost::dynamic_pointer_cast<IoFd>(m_pFds->get(fd));
   if (pIoFd == NULL) {
     /* FIXME 设置错误码 */
     LOG(INFO) << "未找到fd";
@@ -376,7 +258,7 @@ int IoWatcher::disableRecv(pump_fd_t fd) {
 }
 
 int IoWatcher::enableSend(pump_fd_t fd) {
-  PtrFD pIoFd = m_pFds->get(fd);
+  PtrIoFd pIoFd = nsp_boost::dynamic_pointer_cast<IoFd>(m_pFds->get(fd));
   if (pIoFd == NULL) {
     /* FIXME 设置错误码 */
     LOG(INFO) << "未找到fd";
@@ -427,7 +309,7 @@ int IoWatcher::enableSend(pump_fd_t fd) {
 }
 
 int IoWatcher::disableSend(pump_fd_t fd) {
-  PtrFD pIoFd = m_pFds->get(fd);
+  PtrIoFd pIoFd = nsp_boost::dynamic_pointer_cast<IoFd>(m_pFds->get(fd));
   if (pIoFd == NULL) {
     /* FIXME 设置错误码 */
     LOG(INFO) << "未找到fd";
@@ -468,7 +350,7 @@ int IoWatcher::disableSend(pump_fd_t fd) {
 }
 
 int IoWatcher::PostSend(pump_fd_t fd, const nsp_std::string &strMsg) {
-  PtrFD pIoFd = m_pFds->get(fd);
+  PtrIoFd pIoFd = nsp_boost::dynamic_pointer_cast<IoFd>(m_pFds->get(fd));
   if (pIoFd == NULL) {
     /* FIXME 设置错误码 */
     LOG(INFO) << "未找到fd";
@@ -491,7 +373,7 @@ int IoWatcher::PostSend(pump_fd_t fd, const nsp_std::string &strMsg) {
 }
 
 int IoWatcher::PostShutdown(pump_fd_t fd) {
-  PtrFD pIoFd = m_pFds->get(fd);
+  PtrIoFd pIoFd = nsp_boost::dynamic_pointer_cast<IoFd>(m_pFds->get(fd));
   if (pIoFd == NULL) {
     /* FIXME 设置错误码 */
     LOG(INFO) << "未找到fd";
@@ -505,7 +387,7 @@ int IoWatcher::PostShutdown(pump_fd_t fd) {
 }
 
 int IoWatcher::PostClose(pump_fd_t fd) {
-  PtrFD pIoFd = m_pFds->get(fd);
+  PtrIoFd pIoFd = nsp_boost::dynamic_pointer_cast<IoFd>(m_pFds->get(fd));
   if (pIoFd == NULL) {
     /* FIXME 设置错误码 */
     LOG(INFO) << "未找到fd";
@@ -513,7 +395,19 @@ int IoWatcher::PostClose(pump_fd_t fd) {
   }
   
   if (pIoFd->m_state == FD_STATE_CONNECTED) {
-    pIoFd->close();
+    if(pIoFd->close()==-1){
+      // FIXME 处理错误
+    }
+    
+    IoFdCtl change;
+    change.fd_ = pIoFd->fd_;
+    change.type_ = FD_CTL_DEL;
+    m_pBackend->update(change);
+    
+    // 调用关闭回调
+    pIoFd->m_pTcpService->closeCb(*this, pIoFd);
+    
+    m_pFds->remove(pIoFd->fd_);
   }
   return 0;
 }
@@ -546,7 +440,7 @@ int IoWatcher::dispatch() {
     // 遍历发生事件的文件描述符, 并按照事件类型处理
     for (IoFdRetList::iterator it = fdRetList.begin();
          it != fdRetList.end(); ++it) {
-      PtrFD pIoFd = m_pFds->get((*it).fd_);
+      PtrIoFd pIoFd = nsp_boost::dynamic_pointer_cast<IoFd>(m_pFds->get((*it).fd_));
       if (pIoFd == NULL) {
         /* FIXME 设置错误码 */
 #ifdef _TEST_LEVEL_INFO
@@ -597,7 +491,7 @@ int IoWatcher::postProcess() {
   return 0;
 }
 
-int IoWatcher::acceptHandle(PtrFD pFdAccept) {
+int IoWatcher::acceptHandle(PtrIoFd pFdAccept) {
   if (pFdAccept == NULL) {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "error: pFdAccept == NULL";
@@ -629,7 +523,7 @@ ACCEPT:
 #endif // _TEST_LEVEL_INFO
   
   // 构造新的IoFd, 将新的连接描述符添加到数组中
-  PtrFD pFdConnector = nsp_boost::make_shared<IoFd>();
+  PtrIoFd pFdConnector = nsp_boost::make_shared<IoFd>();
   pFdConnector->fd_ = fdConnector;
   nsp_std::string strOnRecv("OnRecv");
   nsp_std::string strOnSend("OnSend");
@@ -641,13 +535,16 @@ ACCEPT:
   pFdConnector->m_pTcpService = pFdAccept->m_pTcpService;
   m_pFds->insert(pFdConnector);
   
+  // 调用接受连接回调
+  pFdConnector->m_pTcpService->acceptCb(*this, pFdConnector);
+  
   // 允许读事件
   this->enableRecv(fdConnector);
   
   return 0;
 }
 
-int IoWatcher::recvHandle(PtrFD pFdRecv) {
+int IoWatcher::recvHandle(PtrIoFd pFdRecv) {
   if (pFdRecv == NULL) {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "error: pFdRecv == NULL";
@@ -665,6 +562,7 @@ int IoWatcher::recvHandle(PtrFD pFdRecv) {
     LOG(INFO) << "warrning: 链接断开";
 #endif // _TEST_LEVEL_INFO
     // FIXME [critical] 缺少链接断开处理
+    this->PostClose(pFdRecv->fd_);
   } else {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "recv: " << buf;
@@ -688,7 +586,7 @@ int IoWatcher::recvHandle(PtrFD pFdRecv) {
   return 0;
 }
 
-int IoWatcher::sendHandle(PtrFD pFdSend) {
+int IoWatcher::sendHandle(PtrIoFd pFdSend) {
   if (pFdSend == NULL) {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "error: pFdSend == NULL";
@@ -747,67 +645,6 @@ int IoWatcher::sendHandle(PtrFD pFdSend) {
   }
   
   return 0;
-}
-
-////////////////////////////////////////////////
-//                   FdHashTable
-////////////////////////////////////////////////
-
-PtrFD FdHashTable::get(pump_fd_t fd) {
-  if (fd >= 1024 || fd < 0) {
-    return PtrFD();
-  }
-  return m_arrFds[fd];
-}
-
-void FdHashTable::insert(PtrFD pFd) {
-  if (pFd == NULL || m_arrFds[pFd->fd_] != NULL) {
-    // FIXME 因设置错误码
-    return;
-  }
-  m_arrFds[pFd->fd_] = pFd;
-}
-
-void FdHashTable::remove(pump_fd_t fd) {
-  if (fd < 0 || fd >= 1024 || m_arrFds[fd] == NULL) {
-    // FIXME 因设置错误码
-    return;
-  }
-  m_arrFds[fd].reset();
-}
-
-////////////////////////////////////////////////
-//                    EvList
-////////////////////////////////////////////////
-
-void EvList::insert(nsp_std::string &strName, PtrEvent pEv) {
-  nsp_std::map<nsp_std::string, PtrEvent>::iterator it = m_lEvs.find(strName);
-  if (it != m_lEvs.end()) {
-    /* 已存在对应关键字元素, 重置元素 */
-    it->second.reset();
-    it->second = pEv;
-    return;
-  }
-  m_lEvs.insert(nsp_std::make_pair(strName, pEv));
-}
-
-void EvList::erase(nsp_std::string &strName) {
-  nsp_std::map<nsp_std::string, PtrEvent>::iterator it = m_lEvs.find(strName);
-  if (it == m_lEvs.end()) {
-    /* 无查找元素 */
-    return;
-  }
-  it->second.reset();
-  m_lEvs.erase(it);
-}
-
-PtrEvent EvList::at(nsp_std::string &strName) {
-  nsp_std::map<nsp_std::string, PtrEvent>::iterator it = m_lEvs.find(strName);
-  if (it == m_lEvs.end()) {
-    /* 无查找元素 */
-    return PtrEvent();
-  }
-  return it->second;
 }
 
 }
