@@ -7,6 +7,8 @@ include(CMake/Dependance.cmake)
 
 aux_source_directory(./src DIRSRCS)
 aux_source_directory(./src/Buffer DIRSRCS)
+aux_source_directory(./src/Watcher DIRSRCS)
+aux_source_directory(./src/Event DIRSRCS)
 set(SRC ./src/pumpdef.h src/Buffer/Buffer.h ${DIRSRCS})
 message(">>> SRC: ${SRC}")
 
