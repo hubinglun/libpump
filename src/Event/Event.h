@@ -120,8 +120,6 @@ struct NormEvent
   virtual ~NormEvent();
 };
 
-struct IoFd;
-
 /**
  * @struct FdEvent []
  * @brief
