@@ -47,8 +47,11 @@ namespace PUMP {
 template<class _Elem,
   class _Alloc = nsp_std::allocator<_Elem> >
 class Buffer {
+private:
+  Buffer();
+
 public:
-  Buffer(size_t iBufLen, _Alloc *alloc = NULL);
+  explicit Buffer(size_t iBufLen, _Alloc *alloc = NULL);
   
   virtual ~Buffer();
   
@@ -122,7 +125,7 @@ protected:
    * @var boost::atomic_int64_t m_aiBufSize
    * @brief 缓冲内有效数据长度
    */
-  nsp_boost::atomic_int64_t m_aiBufSize;
+  nsp_boost::atomic_uint64_t m_aiBufSize;
   
   /**
    * @var boost::mutex m_mtxAppend
@@ -143,6 +146,13 @@ protected:
    */
   KMP m_kmp;
 };
+
+template<class _Elem,
+  class _Alloc>
+Buffer<_Elem, _Alloc>::Buffer()
+  : m_alloc(new nsp_std::allocator<_Elem>()), m_iChunkSize(0), m_iBegin(0), m_aiBufSize(0) {
+  
+}
 
 template<class _Elem,
   class _Alloc>

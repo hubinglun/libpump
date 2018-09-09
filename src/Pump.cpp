@@ -25,6 +25,8 @@ Pump::Pump(PtrCbMailboxEvoker pMbEvoker)
 //                   IPump
 ////////////////////////////////////////////////
 
+IPump::IPump() {}
+
 IPump::IPump(PtrCbMailboxEvoker pMbEvoker)
   : Pump(pMbEvoker) {}
 

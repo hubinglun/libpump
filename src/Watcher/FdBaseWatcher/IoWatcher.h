@@ -61,7 +61,7 @@ public:
    * @param pTcpService 注册Tcp服务
    * @return
    */
-  int newAccept(const char *szIp, int iPort,
+  int newAccept(const char *szIp, ushort iPort,
                 PtrTcpService pTcpService);
   
   int enableAccept(pump_fd_t fd);

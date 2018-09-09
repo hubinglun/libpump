@@ -37,7 +37,7 @@ void IoWatcher::doWatching() {
   postProcess();
 }
 
-int IoWatcher::newAccept(const char *szIp, int iPort,
+int IoWatcher::newAccept(const char *szIp, ushort iPort,
                          PtrTcpService pTcpService) {
   pump_fd_t fd;
   sockaddr_in servaddr;
@@ -366,7 +366,7 @@ int IoWatcher::PostSend(pump_fd_t fd, const nsp_std::string &strMsg) {
   this->enableSend(pSock->fd_);
   
   if ((pSock->m_state != FD_STATE_CONNECTED)
-      || (pSock->fd_ev_ & IO_EV_OUT == 0)
+      || ((pSock->fd_ev_ & IO_EV_OUT) == 0)
       || (!pSock->m_pIobufSend)) {
     /* FIXME 设置错误码 */
     LOG(INFO) << "不允许使用发送缓冲区";

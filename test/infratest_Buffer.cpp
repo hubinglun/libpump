@@ -190,7 +190,7 @@ void test_IoBuffer(){
   ioBuf.erase(4);
   ioBuf.erase(11);
   ioBuf.append(tsz,strlen(tsz));
-  ioBuf.erase(11);
+  ioBuf.erase(17);
   ioBuf.erase(4);
   LOG(INFO)<<"test_IoBuffer complete"<<std::endl;
 }

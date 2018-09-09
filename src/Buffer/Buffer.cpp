@@ -35,16 +35,16 @@ long IoBuffer::get(nsp_std::string &strOBuf, size_t iLen) {
   nsp_std::deque<char *>::iterator it = m_vBufs.begin();
   char *pszBegin = (*it) + m_iBegin;
   if (iRestLen < (m_iChunkSize - m_iBegin)) {
-    strOBuf.append(pszBegin, iRestLen);
+    strOBuf.append(pszBegin, static_cast<size_t >(iRestLen));
     goto RET_GOOD;
   }
   strOBuf.append(pszBegin, (m_iChunkSize - m_iBegin));
   iRestLen -= (m_iChunkSize - m_iBegin);
   ++it;
   while (iRestLen > 0) {
-    char *pszBegin = (*it);
+    pszBegin = (*it);
     if (iRestLen < (m_iChunkSize)) {
-      strOBuf.append(pszBegin, iRestLen);
+      strOBuf.append(pszBegin, static_cast<size_t >(iRestLen));
       goto RET_GOOD;
     }
     strOBuf.append(pszBegin, m_iChunkSize);
