@@ -31,21 +31,6 @@ namespace nsp_boost = ::boost;
 namespace PUMP {
 
 /**
- * @class NetService
- * @brief 与 IoFd 绑定的服务对象
- */
-PUMP_ABSTRACT
-class Service
-  : public nsp_boost::noncopyable {
-public:
-  Service() {}
-  
-  virtual ~Service() {}
-};
-
-typedef nsp_boost::shared_ptr<Service> PtrService;
-
-/**
  * @class Watcher []
  * @brief 事件观察者对象
  *
@@ -128,6 +113,8 @@ public:
     : m_pMbMgr(pMbMgr) {}
   
   virtual ~CentralizedWatcher() {}
+  
+  bool insert(ev_prior_t prior, PtrCbFn pfn);
 
 protected:
   void PostCb();

@@ -6,10 +6,13 @@
  * @version 1.0
  * @date 2018.08.12
  */
-#pragma once
 
 #ifndef LIBPUMP_KMP_H
 #define LIBPUMP_KMP_H
+
+#ifdef _MSC_VER
+#pragma once
+#endif // _MSC_VER
 
 #include <string>
 #include <deque>

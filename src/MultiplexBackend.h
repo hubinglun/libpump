@@ -1,10 +1,18 @@
-//
-// Created by yz on 18-8-14.
-//
-#pragma once
+/**
+ * @file MultiplexBackend.h
+ * @brief MultiplexBackend 相关对象的定义
+ *
+ * @author YangZheng 263693992@qq.com
+ * @version 1.0
+ * @date 2018.09.02
+ */
 
 #ifndef LIBPUMP_MULTIPLEXBACKEND_H
 #define LIBPUMP_MULTIPLEXBACKEND_H
+
+#ifdef _MSC_VER
+#pragma once
+#endif // _MSC_VER
 
 #ifdef linux
 #include <sys/select.h>
@@ -38,6 +46,10 @@ struct IoFdCtl {
   FdCtlTyge type_;
   pump_fd_t fd_;
   unsigned short fd_ev_;
+  IoFdCtl()
+    : type_(FD_CTL_NONE)
+    ,fd_(-1)
+    ,fd_ev_(IO_EV_NONE){}
 };
 
 /**
@@ -56,6 +68,9 @@ struct IoFdRet {
    * @brief 发生事件, 必须是 IO_EV_XXX
    */
   unsigned short re_fd_ev_;
+  IoFdRet()
+    : fd_(-1)
+    , re_fd_ev_(IO_EV_NONE){}
 };
 
 typedef nsp_std::vector<IoFdRet> IoFdRetList;

@@ -6,10 +6,13 @@
  * @version 1.0
  * @date 2018.07.27
  */
-#pragma once
 
 #ifndef LIBPUMP_CBMAILBOX_H
 #define LIBPUMP_CBMAILBOX_H
+
+#ifdef _MSC_VER
+#pragma once
+#endif // _MSC_VER
 
 #include <list>
 #include <vector>

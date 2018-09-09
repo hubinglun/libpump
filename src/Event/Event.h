@@ -6,10 +6,13 @@
  * @version 1.0
  * @date 2018.07.29
  */
-#pragma once
 
 #ifndef LIBPUMP_EVENT_H
 #define LIBPUMP_EVENT_H
+
+#ifdef _MSC_VER
+#pragma once
+#endif // _MSC_VER
 
 #include <string>
 #include "CbMailbox.h"

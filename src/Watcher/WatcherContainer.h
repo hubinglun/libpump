@@ -1,6 +1,11 @@
-//
-// Created by yz on 18-9-8.
-//
+/**
+ * @file WatcherContainer.h
+ * @brief WatcherContainer 相关对象的定义
+ *
+ * @author YangZheng 263693992@qq.com
+ * @version 1.0
+ * @date 2018.09.08
+ */
 
 #ifndef LIBPUMP_WATCHERCONTAINER_H
 #define LIBPUMP_WATCHERCONTAINER_H

@@ -6,10 +6,13 @@
  * @version 1.0
  * @date 2018.08.12
  */
-#pragma once
 
 #ifndef LIBPUMP_BUFFER_H
 #define LIBPUMP_BUFFER_H
+
+#ifdef _MSC_VER
+#pragma once
+#endif // _MSC_VER
 
 #include <cstring>
 #include <deque>

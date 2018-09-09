@@ -33,4 +33,12 @@ void CentralizedWatcher::PostCb() {
 
 }
 
+////////////////////////////////////////////////
+//              CentralizedWatcher
+////////////////////////////////////////////////
+
+bool CentralizedWatcher::insert(ev_prior_t prior, PtrCbFn pfn) {
+  return m_pMbMgr->insert(prior, pfn);
+}
+
 }

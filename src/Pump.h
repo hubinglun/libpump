@@ -7,10 +7,12 @@
  * @date 2018.07.27
  */
 
-#pragma once
-
 #ifndef LIBPUMP_PUMP_H
 #define LIBPUMP_PUMP_H
+
+#ifdef _MSC_VER
+#pragma once
+#endif // _MSC_VER
 
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
