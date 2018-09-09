@@ -4,7 +4,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include "CbMailbox.h"
-#include "Watcher/IoWatcher.h"
+#include "Watcher/FdBaseWatcher/IoWatcher.h"
 #include "Logger.h"
 
 using namespace PUMP;
@@ -87,7 +87,7 @@ public:
 typedef nsp_boost::shared_ptr<OnClose> PfnOnClose;
 
 class TcpTest
-  : public TcpService {
+  : public NetService {
 public:
   explicit TcpTest(PtrCbMailboxMgr pMbMgr) : m_pMbMgr(pMbMgr) {
     m_pfnRecv = nsp_boost::make_shared<OnRecv>();
@@ -106,7 +106,7 @@ public:
   
   virtual int recvCb(IoWatcher & rIoWatcher, PtrFD pFd, PtrVoid pData) {
     PfnOnRecv pRecv = nsp_boost::dynamic_pointer_cast<OnRecv>(m_pfnRecv);
-    m_pMbMgr->insert(EVPRIOR_DEFAULT, pRecv);
+    rIoWatcher.insert(EVPRIOR_DEFAULT, pRecv);
     nsp_std::string strMsg("Hello World!!!\n");
     rIoWatcher.PostSend(pFd->fd_, strMsg);
     return 0;
@@ -114,20 +114,20 @@ public:
   
   virtual int sendCb(IoWatcher & rIoWatcher, PtrFD pFd, PtrVoid pData) {
     PfnOnSend pSend = nsp_boost::dynamic_pointer_cast<OnSend>(m_pfnSend);
-    m_pMbMgr->insert(EVPRIOR_DEFAULT, pSend);
+    rIoWatcher.insert(EVPRIOR_DEFAULT, pSend);
     return 0;
   }
   
   virtual int acceptCb(IoWatcher & rIoWatcher, PtrFD pFd, PtrVoid pData) {
     PfnOnAccept pFn = nsp_boost::dynamic_pointer_cast<OnAccept>(m_pfnAccept);
     pFn->m_arg1 = pFd->fd_;
-    m_pMbMgr->insert(EVPRIOR_DEFAULT, pFn);
+    rIoWatcher.insert(EVPRIOR_DEFAULT, pFn);
     return 0;
   }
   
   virtual int closeCb(IoWatcher & rIoWatcher, PtrFD pFd, PtrVoid pData) {
     PfnOnClose pFn = nsp_boost::dynamic_pointer_cast<OnClose>(m_pfnClose);
-    m_pMbMgr->insert(EVPRIOR_DEFAULT, pFn);
+    rIoWatcher.insert(EVPRIOR_DEFAULT, pFn);
     return 0;
   }
   

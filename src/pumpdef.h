@@ -6,10 +6,13 @@
  * @version 1.0
  * @date 2018.07.29
  */
-#pragma once
 
 #ifndef LIBPUMP_PUMPDEF_H
 #define LIBPUMP_PUMPDEF_H
+
+#ifdef _MSC_VER
+#pragma once
+#endif // _MSC_VER
 
 #include <boost/shared_ptr.hpp>
 
@@ -128,6 +131,7 @@ const unsigned short IO_EV_ERR = 0x004;     //! io fd 发生异常事件
  * @brief 描述对 IoFd 对象修改类型
  */
 enum FdCtlTyge {
+  FD_CTL_NONE,
   FD_CTL_ADD,  //! 增加监听事件类型
   FD_CTL_DEL,  //! 删除监听事件类型
   FD_CTL_MOD   //! 修改监听事件类型
