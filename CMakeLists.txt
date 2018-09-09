@@ -38,3 +38,6 @@ target_link_libraries(infratest_Buffer ${all_libs} pump)
 
 add_executable(infratest_Watcher test/infratest_Watcher.cpp)
 target_link_libraries(infratest_Watcher ${all_libs} pump)
+
+add_executable(boost_interprocess_test test/boost_test/boost_interprocess_test.cpp)
+target_link_libraries(boost_interprocess_test ${all_libs} pump)

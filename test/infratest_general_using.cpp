@@ -38,8 +38,6 @@ void swap(char* &p, char* &q)
 	q = t;
 }
 
-
-
 void shared_prt_test(){
 	shared_ptr<test_A> pA;
 	if(pA == NULL) {
