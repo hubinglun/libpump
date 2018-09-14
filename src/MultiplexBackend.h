@@ -47,7 +47,7 @@ struct IoFdCtl {
   pump_fd_t fd_;
   unsigned short fd_ev_;
   IoFdCtl()
-    : type_(FD_CTL_NONE)
+    : type_(FD_CTL_DEFAULT)
     ,fd_(-1)
     ,fd_ev_(IO_EV_NONE){}
 };

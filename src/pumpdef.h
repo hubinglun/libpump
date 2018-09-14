@@ -63,10 +63,10 @@ enum EventPriority {
  * EVSTATE_ACTIVE -> EVSTATE_SOLVED -> EVSTATE_REGISTERED
  * */
 enum EventState {
-  EVSTATE_INIT,        //! 初始化态
-  EVSTATE_REGISTERED,  //! 注册态
-  EVSTATE_ACTIVE,    //! 激活态
-  EVSTATE_SOLVED,    //! 已处理态
+  EVSTATE_INIT,           //! 初始化态
+  EVSTATE_REGISTERED,     //! 注册态
+  EVSTATE_ACTIVE,         //! 激活态
+  EVSTATE_SOLVED,         //! 已处理态
 };
 
 /**
@@ -118,9 +118,11 @@ enum PumpState {
  * - TMTYPE_PERIODIC 周期性定时器
  */
 enum TimerType {
+  TMTYPE_DEFAULT,      //! 默认类型
   TMTYPE_ONETIME,   //! 一次性定时器
   TMTYPE_PERIODIC   //! 周期性定时器
 };
+
 const unsigned short IO_EV_NONE = 0x000;    //! io fd 无监听事件
 const unsigned short IO_EV_IN = 0x001;      //! io fd 发生可读事件
 const unsigned short IO_EV_OUT = 0x002;     //! io fd 发生可写事件
@@ -131,7 +133,7 @@ const unsigned short IO_EV_ERR = 0x004;     //! io fd 发生异常事件
  * @brief 描述对 IoFd 对象修改类型
  */
 enum FdCtlTyge {
-  FD_CTL_NONE,
+  FD_CTL_DEFAULT, //! 默认类型
   FD_CTL_ADD,  //! 增加监听事件类型
   FD_CTL_DEL,  //! 删除监听事件类型
   FD_CTL_MOD   //! 修改监听事件类型
