@@ -23,6 +23,7 @@
 #include "pumpdef.h"
 #include "Logger.h"
 #include "CbMailbox.h"
+#include "../Pump.h"
 #include "Event/Event.h"
 #include "Event/EventContainer.h"
 
@@ -38,18 +39,11 @@ namespace PUMP {
  */
 PUMP_ABSTRACT
 class Watcher
-  : public nsp_boost::noncopyable {
+  : public Pump {
 public:
   Watcher() {}
   
   virtual ~Watcher() {}
-
-public:
-  virtual void doWatching(/* FIXME 参数是否需要? */) = 0;
-  
-  void setArgIn(PtrArg pArgIn);
-  
-  PtrArg getArgOut();
 
 protected:
   virtual int preProcess() = 0;
@@ -59,8 +53,6 @@ protected:
   virtual int postProcess() = 0;
 
 protected:
-  //! < Watcher 对象名
-  nsp_std::string m_strName;
   /**
    * @var PtrEvContainer m_pEvents
    * @brief Event 容器, 可向其中注册 Event
@@ -76,20 +68,6 @@ protected:
    * @brief PostEvent 容器, 可向其中注册 PostEvent
    */
   PtrPostEvContainer m_pPostEvents;
-  /**
-   * @var PtrArg m_argIn
-   * @brief Watcher 对象的输入参数
-   *
-   * 指针对象, 因此可以是任何类型的数据, 由 Watcher 对象的实现派生解释
-   */
-  PtrArg m_argIn;
-  /**
-   * @var PtrArg m_argOut
-   * @brief Watcher 对象的输出
-   *
-   * 指针对象, 因此可以是任何类型的数据, 由 Watcher 对象的实现派生解释
-   */
-  PtrArg m_argOut;
 };
 
 /** Watcher 内存托管 */
@@ -122,7 +100,7 @@ protected:
    * @brief CbMailbox 管理对象, 可以向邮箱增删回调对象, 非所有者
    */
   PtrCbMailboxMgr m_pMbMgr;
-  PostEvent m_PstEvPostCb;
+//  PostEvent m_PstEvPostCb;
 };
 
 }

@@ -23,6 +23,7 @@ IoWatcher::IoWatcher(PtrCbMailboxMgr pMbMgr)
 IoWatcher::~IoWatcher() {}
 
 void IoWatcher::init() {
+  Pump::init();
   m_pEvents = nsp_boost::make_shared<EvList>();
   m_pPostEvents = nsp_boost::make_shared<PrePostList>();
   // FIXME 前置及后置事件容器未初始化
@@ -31,7 +32,7 @@ void IoWatcher::init() {
   m_pBackend->init();
 }
 
-void IoWatcher::doWatching() {
+int IoWatcher::routine_core() {
   preProcess();
   dispatch();
   postProcess();

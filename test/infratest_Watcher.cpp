@@ -171,7 +171,7 @@ void test_IoWatcher(){
   watcher.init();
   watcher.newAccept("127.0.0.1", 8001, tcpTest);
   while (1) {
-    watcher.doWatching();
+    watcher.routine_core();
     pMailbox->runAll();
   }
 }
