@@ -21,17 +21,6 @@ namespace PUMP {
 //                   Watcher
 ////////////////////////////////////////////////
 
-void Watcher::setArgIn(PtrArg _IN) {
-  m_argIn = _IN;
-}
-
-PtrArg Watcher::getArgOut() {
-  return m_argOut;
-}
-
-void CentralizedWatcher::PostCb() {
-
-}
 
 ////////////////////////////////////////////////
 //              CentralizedWatcher
