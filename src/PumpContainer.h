@@ -15,10 +15,10 @@ class Pump;
 typedef nsp_boost::shared_ptr<Pump> PtrPump;
 /**
  * @class WatcherContainer []
- * @brief Watcher 对象的容器抽象对象
+ * @brief PWatcher 对象的容器抽象对象
  *
- * 用户必须派生 WatcherContainer 对象实现接口, 并实现存储 Watcher 的对象.
- * Watcher 存储逻辑结构可以使任意的
+ * 用户必须派生 WatcherContainer 对象实现接口, 并实现存储 PWatcher 的对象.
+ * PWatcher 存储逻辑结构可以使任意的
  *
  * > WARNING 现阶段不支持Watcher动态创建
  */
@@ -67,7 +67,7 @@ public:
   
   /**
    * @fn virtual size_t count() = 0
-   * @brief Watcher 对象的数量
+   * @brief PWatcher 对象的数量
    * @return　数量
    */
   virtual size_t count() = 0;

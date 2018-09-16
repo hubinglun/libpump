@@ -65,7 +65,7 @@ bool WatcherList::empty() {}
 
 /**
  * @fn WatcherList::size_t count()
- * @brief Watcher 对象的数量
+ * @brief PWatcher 对象的数量
  * @return　数量
  */
 size_t WatcherList::count() {}

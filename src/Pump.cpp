@@ -15,14 +15,16 @@ namespace PUMP {
 ////////////////////////////////////////////////
 
 Pump::Pump()
-  : m_state(PUMPSTATE_NEW), m_bIsAsync(false) {}
+  : m_emState(PUMPSTATE_NEW), m_emType(PUMPTYPE_SYNC) {}
 
 #ifdef _TEST_LEVEL_INFO
 
-Pump::Pump(PtrArg pIn, PtrArg pOut, bool bIsAsync)
-  : m_state(PUMPSTATE_NEW),
-    m_bIsAsync(bIsAsync),
-    m_pThread(bIsAsync ? nsp_boost::make_shared<PThread>() : PtrThread()),
+Pump::Pump(PtrArg pIn, PtrArg pOut, PumpType emType)
+  : m_emState(PUMPSTATE_NEW),
+    m_emType(emType),
+    m_pThread((emType == PUMPTYPE_ASYNC)
+              ? nsp_boost::make_shared<PThread>()
+              : PtrThread()),
     m_pArgIn(pIn),
     m_pArgOut(pOut) {
   
@@ -31,22 +33,21 @@ Pump::Pump(PtrArg pIn, PtrArg pOut, bool bIsAsync)
 #endif //_TEST_LEVEL_INFO
 
 void Pump::init() {
-  m_state = PUMPSTATE_INIT;
+  m_emState = PUMPSTATE_INIT;
 }
 
 int Pump::start() {
-  m_state = PUMPSTATE_START;
+  m_emState = PUMPSTATE_START;
   return 0;
 }
 
-
 int Pump::pause() {
-  m_state = PUMPSTATE_PAUSE;
+  m_emState = PUMPSTATE_PAUSE;
   return 0;
 }
 
 int Pump::stop() {
-  m_state = PUMPSTATE_STOP;
+  m_emState = PUMPSTATE_STOP;
   return 0;
 }
 
@@ -59,6 +60,23 @@ PtrArg Pump::getArgOut() {
 }
 
 ////////////////////////////////////////////////
+//                   AsyncPump
+////////////////////////////////////////////////
+
+AsyncPump::AsyncPump() { }
+
+#ifdef _TEST_LEVEL_INFO
+AsyncPump::AsyncPump(PtrArg pIn, PtrArg pOut)
+  : Pump(pIn, pOut, PUMPTYPE_ASYNC){
+  
+}
+#endif //_TEST_LEVEL_INFO
+
+AsyncPump::~AsyncPump(){
+
+}
+
+////////////////////////////////////////////////
 //                   PWitness
 ////////////////////////////////////////////////
 
@@ -66,8 +84,8 @@ PWitness::PWitness() {}
 
 #ifdef _TEST_LEVEL_INFO
 
-PWitness::PWitness(PtrArg pIn, PtrArg pOut, bool bIsAsync)
-  : Pump(pIn, pOut, bIsAsync) {
+PWitness::PWitness(PtrArg pIn, PtrArg pOut)
+  : AsyncPump(pIn, pOut) {
   m_pThread = nsp_boost::make_shared<PWitnessThread>();
 }
 
@@ -75,7 +93,7 @@ PWitness::PWitness(PtrArg pIn, PtrArg pOut, bool bIsAsync)
 
 PWitness::~PWitness() {}
 
-int PWitness::preProcess() {
+int PWitness::preWatch() {
   // 暂时不知道干啥, 但是肯定是与Watcher对象相关的预处理
   return 0;
 }
@@ -89,9 +107,9 @@ void PWitness::routine() {
 
 int PWitness::routine_core() {
   LOG(INFO) << "routine_core()";
-  preProcess();
+  preWatch();
   process();
-  postProcess();
+  postWatch();
   return 0;
 }
 
@@ -104,14 +122,14 @@ int PWitness::process() {
 //  for (PtrWatcher t_wpW = m_pWatchers->begin();
 //       t_wpW != NULL && t_wpW != m_pWatchers->end();
 //       t_wpW = m_pWatchers->next()) {
-//    // 执行 Watcher 对象的"观察"操作
+//    // 执行 PWatcher 对象的"观察"操作
 //    t_wpW->doWatching();
 //  }
   return 0;
 }
 
-int PWitness::postProcess() {
-//  // 目前 postProcess 仅安排执行回调
+int PWitness::postWatch() {
+//  // 目前 postWatch 仅安排执行回调
 //  PtrICbMailboxEvoker t_pMailEvoker = nsp_boost::dynamic_pointer_cast<ICbMailboxEvoker>(m_pMbEvoker);
 //  if (t_pMailEvoker == NULL) {
 //    // FIXME 应该设置错误码 error !!!
@@ -123,11 +141,12 @@ int PWitness::postProcess() {
 
 void PWitness::init() {
   Pump::init();
+  m_pThread->m_pMailbox = nsp_boost::make_shared<CbQueueMailbox>();
 }
 
 int PWitness::start() {
-  if(m_state < PUMPSTATE_INIT){
-    LOG(WARNING)<<"Pump 对象执行前必须初始化";
+  if (m_emState < PUMPSTATE_INIT) {
+    LOG(WARNING) << "Pump 对象执行前必须初始化";
     return -1;
   }
   Pump::start();
@@ -151,7 +170,7 @@ int PWitness::stop() {
 }
 
 void PWitness::join() {
-  if(m_state >= PUMPSTATE_START)
+  if (m_emState >= PUMPSTATE_START)
     m_pThread->m_pRealThread->join();
 }
 

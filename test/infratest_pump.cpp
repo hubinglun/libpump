@@ -59,10 +59,12 @@ int main() {
 //  initMailbox(pMailbox);
 //  // 构造一个 ICbMailboxEvoker 的托管对象
 //  PtrICbMailboxEvoker pEvoker = nsp_boost::make_shared<ICbMailboxEvoker>(pMailbox);
-  PWitness aWitness(PtrArg(),PtrArg(),true);
-  aWitness.init();
-  aWitness.start();
-  aWitness.join();
+  PtrArg pIn,pOut;
+  
+  PWitness aWit(pIn,pOut);
+  aWit.init();
+  aWit.start();
+  aWit.join();
 //  while (1);
   return 0;
 }
