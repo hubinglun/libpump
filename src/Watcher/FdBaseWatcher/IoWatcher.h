@@ -48,9 +48,10 @@ public:
   virtual ~IoWatcher();
 
 public:
-  virtual void doWatching();
+  virtual void routine() {}
+  virtual int routine_core();
   
-  void init();
+  virtual void init();
   
   /**
    * @fn nt newAccept(const char *szIp, int iPort,

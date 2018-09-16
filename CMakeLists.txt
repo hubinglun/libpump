@@ -15,13 +15,14 @@ message(">>> SRC: ${SRC}")
 
 include_directories(./src)
 # test code level: DEBUG INFO TRACE
-add_compile_options(-D_TEST_LEVEL_INFO -Wno-write-strings -lpthread)
-
+add_compile_options(-D_TEST_LEVEL_INFO -DBOOST_THREAD_USE_LIB=1 -Wno-write-strings -lpthread -fPIC)
 set(all_libs ${Boost_LIBRARIES} ${glog_libs} ${protobuf_libs})
 message(">>> LIBS: ${all_libs}")
 
 # 产生动态库 libpump.so
-add_library(pump SHARED ${SRC} ${all_libs})
+link_libraries(${all_libs})
+add_library(pump SHARED ${SRC})
+
 
 # 测试代码
 add_executable(infratest_CbMailbox test/infratest_CbMailbox.cpp)
@@ -39,5 +40,5 @@ target_link_libraries(infratest_Buffer ${all_libs} pump)
 add_executable(infratest_Watcher test/infratest_Watcher.cpp)
 target_link_libraries(infratest_Watcher ${all_libs} pump)
 
-add_executable(boost_interprocess_test test/boost_test/boost_interprocess_test.cpp)
-target_link_libraries(boost_interprocess_test ${all_libs} pump)
+add_executable(infrastest_Thread test/infrastest_Thread.cpp)
+target_link_libraries(infrastest_Thread ${all_libs} pump)

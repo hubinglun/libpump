@@ -1,7 +1,8 @@
 #</find Boost>
 find_package(Boost REQUIRED COMPONENTS
         thread
-        system)
+        system
+        program_options)
 include_directories(${Boost_INCLUDE_DIRS})
 #</find Boost>
 

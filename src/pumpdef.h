@@ -105,9 +105,10 @@ enum EventType {
 enum PumpState {
   PUMPSTATE_NEW,    //! 新建态
   PUMPSTATE_INIT,   //! 初始化态
-  PUMPSTATE_STOP,   //! 终止态
   PUMPSTATE_START,  //! 运行态
-  PUMPSTATE_PAUSE,  //! 挂起态
+  PUMPSTATE_PAUSE,  //! 暂停态
+  PUMPSTATE_WAITE,  //! 挂起态
+  PUMPSTATE_STOP,   //! 终止态
 };
 
 /**
