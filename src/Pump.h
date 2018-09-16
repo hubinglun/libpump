@@ -41,7 +41,7 @@ typedef nsp_boost::shared_ptr<Pump> PtrPump;
 /**
  * @class Pump [Pump.cpp]
  * @brief Pump 对象名字源于强健有力的“泵”, 正如“泵”的将机械能或其他外部能量传送给液体那样,
- * Pump 对象是整个事件循环框架的动力源泉, 它负责驱动 Watcher 对象监听、激活、处理
+ * Pump 对象是整个事件循环框架的动力源泉, 它负责驱动 PWatcher 对象监听、激活、处理
  * 事件对象
  */
 PUMP_ABSTRACT
@@ -53,7 +53,7 @@ public:
 
 #ifdef _TEST_LEVEL_INFO
   
-  Pump(PtrArg pIn, PtrArg pOut, bool bIsAsync);
+  Pump(PtrArg pIn, PtrArg pOut, PumpType emType);
 
 #endif //_TEST_LEVEL_INFO
   
@@ -98,26 +98,47 @@ protected:
   virtual int routine_core() = 0;
 
 protected:
-  //! < Watcher 对象名
+  //! < PWatcher 对象名
   nsp_std::string m_strName;
   //! 标志 Pump 当前的运行状态
-  enum PumpState m_state;
-  const bool m_bIsAsync;
+  enum PumpState m_emState;
+  const enum PumpType m_emType;
   PtrThread m_pThread;
   /**
    * @var PtrArg m_argIn
-   * @brief Watcher 对象的输入参数
+   * @brief PWatcher 对象的输入参数
    *
-   * 指针对象, 因此可以是任何类型的数据, 由 Watcher 对象的实现派生解释
+   * 指针对象, 因此可以是任何类型的数据, 由 PWatcher 对象的实现派生解释
    */
   PtrArg m_pArgIn;
   /**
    * @var PtrArg m_argOut
-   * @brief Watcher 对象的输出
+   * @brief PWatcher 对象的输出
    *
-   * 指针对象, 因此可以是任何类型的数据, 由 Watcher 对象的实现派生解释
+   * 指针对象, 因此可以是任何类型的数据, 由 PWatcher 对象的实现派生解释
    */
   PtrArg m_pArgOut;
+};
+
+class AsyncPump
+  : public Pump {
+
+public:
+  AsyncPump();
+  
+#ifdef _TEST_LEVEL_INFO
+  
+  AsyncPump(PtrArg pIn, PtrArg pOut);
+
+#endif //_TEST_LEVEL_INFO
+  
+  virtual ~AsyncPump();
+
+protected:
+  virtual void routine() = 0;
+
+protected:
+  PtrThread m_pThread;
 };
 
 /**
@@ -126,22 +147,22 @@ protected:
  */
 PUMP_IMPLEMENT
 class PWitness
-  : public Pump {
+  : public AsyncPump {
 public:
   PUMP_IMPLEMENT
   class PWitnessThread
     : public PThread {
   public:
-    PWitnessThread(){
-      m_pMailbox = nsp_boost::make_shared<CbQueueMailbox>();
-    }
+    PWitnessThread() {}
     ~PWitnessThread() {}
   };
 public:
+  
+  PWitness();
 
 #ifdef _TEST_LEVEL_INFO
   
-  PWitness(PtrArg pIn, PtrArg pOut, bool bIsAsync);
+  PWitness(PtrArg pIn, PtrArg pOut);
 
 #endif //_TEST_LEVEL_INFO
   
@@ -168,23 +189,22 @@ public:
   void join();
 
 private:
-  PWitness();
   /**
    * @brief process() 前置处理
    */
-  virtual int preProcess();
+  virtual int preWatch();
   
   /**
    * @brief process()
    *
-   * 遍历 m_watchers 数组, 逐个调用 Watcher 对象的三个阶段函数
+   * 遍历 m_watchers 数组, 逐个调用 PWatcher 对象的三个阶段函数
    */
   virtual int process();
   
   /**
    * @brief process()前置处理
    */
-  virtual int postProcess();
+  virtual int postWatch();
 };
 
 }

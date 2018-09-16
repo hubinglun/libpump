@@ -10,16 +10,16 @@
 #ifndef LIBPUMP_WATCHERCONTAINER_H
 #define LIBPUMP_WATCHERCONTAINER_H
 
-#include "Watcher.h"
+#include "PWatcher.h"
 
 namespace PUMP {
 
 /**
  * @class WatcherContainer []
- * @brief Watcher 对象的容器抽象对象
+ * @brief PWatcher 对象的容器抽象对象
  *
- * 用户必须派生 WatcherContainer 对象实现接口, 并实现存储 Watcher 的对象.
- * Watcher 存储逻辑结构可以使任意的
+ * 用户必须派生 WatcherContainer 对象实现接口, 并实现存储 PWatcher 的对象.
+ * PWatcher 存储逻辑结构可以使任意的
  *
  * > WARNING 现阶段不支持Watcher动态创建
  */
@@ -68,7 +68,7 @@ public:
   
   /**
    * @fn virtual size_t count() = 0
-   * @brief Watcher 对象的数量
+   * @brief PWatcher 对象的数量
    * @return　数量
    */
   virtual size_t count() = 0;
@@ -88,7 +88,7 @@ typedef nsp_boost::shared_ptr<WatcherContainer> PtrWatcherContainer;
 PUMP_IMPLEMENT
 class WatcherList
   : public WatcherContainer {
-  /* FIXME 缺少初始化 Watcher 对象的方法*/
+  /* FIXME 缺少初始化 PWatcher 对象的方法*/
 public:
   WatcherList();
   
@@ -143,7 +143,7 @@ public:
   
   /**
    * @fn virtual size_t count()
-   * @brief Watcher 对象的数量
+   * @brief PWatcher 对象的数量
    * @return　数量
    */
   virtual size_t count();

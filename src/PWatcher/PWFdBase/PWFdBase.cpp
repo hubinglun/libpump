@@ -2,9 +2,17 @@
 // Created by yz on 18-9-8.
 //
 
-#include "FdBaseWatcher.h"
+#include "PWFdBase.h"
 
 namespace PUMP {
+
+////////////////////////////////////////////////
+//                   PWFdBase
+////////////////////////////////////////////////
+#ifdef _TEST_LEVEL_INFO
+PWFdBase::PWFdBase(PtrArg pIn, PtrArg pOut, PtrCbMailboxMgr pMbMgr)
+: PWCentralized(pIn,pOut,pMbMgr) {}
+#endif //_TEST_LEVEL_INFO
 
 ////////////////////////////////////////////////
 //                   FdHashTable

@@ -7,10 +7,10 @@ include(CMake/Dependance.cmake)
 
 aux_source_directory(./src DIRSRCS)
 aux_source_directory(./src/Buffer DIRSRCS)
-aux_source_directory(./src/Watcher DIRSRCS)
-aux_source_directory(./src/Watcher/FdBaseWatcher DIRSRCS)
+aux_source_directory(./src/PWatcher DIRSRCS)
+aux_source_directory(src/PWatcher/PWFdBase DIRSRCS)
 aux_source_directory(./src/Event DIRSRCS)
-set(SRC ./src/ src/Buffer/ src/Watcher/FdBaseWatcher/ ${DIRSRCS})
+set(SRC ./src/ src/Buffer/ src/PWatcher/PWFdBase/ ${DIRSRCS})
 message(">>> SRC: ${SRC}")
 
 include_directories(./src)

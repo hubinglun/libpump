@@ -1,6 +1,6 @@
 /**
- * @file Watcher.h
- * @brief Watcher 相关对象的定义
+ * @file PWatcher.h
+ * @brief PWatcher 相关对象的定义
  *
  * @author YangZheng 263693992@qq.com
  * @version 1.0
@@ -32,25 +32,31 @@ namespace nsp_boost = ::boost;
 namespace PUMP {
 
 /**
- * @class Watcher []
+ * @class PWatcher []
  * @brief 事件观察者对象
  *
  * 注册, 监听, 激活, 处理(投递)事件
  */
 PUMP_ABSTRACT
-class Watcher
-  : public Pump {
+class PWatcher
+  : public AsyncPump {
 public:
-  Watcher() {}
+  PWatcher() {}
+
+#ifdef _TEST_LEVEL_INFO
   
-  virtual ~Watcher() {}
+  PWatcher(PtrArg pIn, PtrArg pOut);
+
+#endif // _TEST_LEVEL_INFO
+  
+  virtual ~PWatcher() {}
 
 protected:
-  virtual int preProcess() = 0;
+  virtual int preWatch() = 0;
   
-  virtual int dispatch() = 0;
+  virtual int watch() = 0;
   
-  virtual int postProcess() = 0;
+  virtual int postWatch() = 0;
 
 protected:
   /**
@@ -70,27 +76,29 @@ protected:
   PtrPostEvContainer m_pPostEvents;
 };
 
-/** Watcher 内存托管 */
-typedef nsp_boost::shared_ptr<Watcher> PtrWatcher;
+/** PWatcher 内存托管 */
+typedef nsp_boost::shared_ptr<PWatcher> PtrWatcher;
 
-/** Watcher 内存托管 */
-typedef nsp_boost::weak_ptr<Watcher> WPtrWatcher;
+/** PWatcher 内存托管 */
+typedef nsp_boost::weak_ptr<PWatcher> WPtrWatcher;
 
 /**
- * @class CentralizedWatcher []
+ * @class PWCentralized []
  * @brief 集中式事件检测器, 向 "回调函数邮箱" 投递事件回调, 集中处理
  */
 PUMP_ABSTRACT
-class CentralizedWatcher
-  : public Watcher {
+class PWCentralized
+  : public PWatcher {
 public:
-  CentralizedWatcher() {}
+  PWCentralized() {}
+
+#ifdef _TEST_LEVEL_INFO
   
-  // FIXME 目前没有解决pMbMgr参数由谁传入的问题
-  explicit CentralizedWatcher(PtrCbMailboxMgr pMbMgr)
-    : m_pMbMgr(pMbMgr) {}
+  PWCentralized(PtrArg pIn, PtrArg pOut, PtrCbMailboxMgr pMbMgr);
+
+#endif // _TEST_LEVEL_INFO
   
-  virtual ~CentralizedWatcher() {}
+  virtual ~PWCentralized() {}
   
   bool insert(ev_prior_t prior, PtrCbFn pfn);
 

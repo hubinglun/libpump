@@ -63,10 +63,10 @@ public:
    */
   unsigned short re_fd_ev_;
   /**
-   * @var FdState m_state
+   * @var FdState m_emState
    * @brief io文件描述符的生命周期状态
    */
-  FdState m_state;
+  FdState m_emState;
   /**
    * @var PtrFdService m_pFdService
    * @brief Tcp 层的服务对象, 主要用于处理操作系统级的fd事件
@@ -77,7 +77,7 @@ public:
     : fd_(-1),
       fd_ev_(IO_EV_NONE),
       re_fd_ev_(IO_EV_NONE),
-      m_state(FD_STATE_INIT) {}
+      m_emState(FD_STATE_INIT) {}
   
   virtual ~FdBase() {}
 };
@@ -169,7 +169,9 @@ public:
   {}
   
   virtual ~IoFd() {
-    this->close();
+    if(m_emState==FD_STATE_CONNECTED){
+      this->close();
+    }
   }
   
   int close() {
@@ -194,6 +196,7 @@ public:
       break;
     } while (1);
     
+    m_emState = FD_STATE_CLOSED;
     return 0;
   }
 

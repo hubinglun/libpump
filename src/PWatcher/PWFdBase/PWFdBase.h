@@ -18,7 +18,7 @@
 #include <sys/socket.h>
 #endif // linux
 
-#include "Watcher/Watcher.h"
+#include "PWatcher/PWatcher.h"
 #include "FdDef.h"
 #include "Event/Event.h"
 #include "Event/EventContainer.h"
@@ -33,15 +33,18 @@ namespace PUMP {
  * @brief 用于监听文件描述符的事件检测器
  */
 PUMP_ABSTRACT
-class FdBaseWatcher
-  : public CentralizedWatcher {
+class PWFdBase
+  : public PWCentralized {
 public:
-  FdBaseWatcher() {}
+  PWFdBase() {}
+
+#ifdef _TEST_LEVEL_INFO
   
-  explicit FdBaseWatcher(PtrCbMailboxMgr pMbMgr)
-    : CentralizedWatcher(pMbMgr) {}
+  PWFdBase(PtrArg pIn, PtrArg pOut, PtrCbMailboxMgr pMbMgr);
+
+#endif //_TEST_LEVEL_INFO
   
-  virtual ~FdBaseWatcher() {}
+  virtual ~PWFdBase() {}
   
   // FIXME 此处TcpSockService设置为友元主要为解决m_pFds访问权限问题, 感觉不太安全
   friend class TcpSockService;
