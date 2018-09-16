@@ -95,9 +95,6 @@ public:
   bool insert(ev_prior_t prior, PtrCbFn pfn);
 
 protected:
-  void PostCb();
-
-protected:
   /**
    * @var PtrCbMailboxMgr m_pMbMgr
    * @brief CbMailbox 管理对象, 可以向邮箱增删回调对象, 非所有者
