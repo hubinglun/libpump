@@ -8,7 +8,7 @@
  */
 #include "Pump.h"
 
-namespace PUMP {
+namespace Pump {
 
 ////////////////////////////////////////////////
 //                   Pump

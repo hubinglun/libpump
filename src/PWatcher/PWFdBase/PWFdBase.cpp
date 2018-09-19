@@ -4,7 +4,7 @@
 
 #include "PWFdBase.h"
 
-namespace PUMP {
+namespace Pump {
 
 ////////////////////////////////////////////////
 //                   PWFdBase

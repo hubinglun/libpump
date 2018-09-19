@@ -4,7 +4,7 @@
 
 #include "Logger.h"
 
-namespace PUMP {
+namespace Pump {
 
 Logger g_Logger;
 

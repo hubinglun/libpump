@@ -29,10 +29,10 @@ namespace nsp_std = ::std;
 namespace nsp_boost = ::boost;
 
 /**
- * @namespace namespace PUMP
+ * @namespace namespace Pump
  * @brief libpump 的顶级命名空间
  */
-namespace PUMP {
+namespace Pump {
 
 class Pump;
 

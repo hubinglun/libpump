@@ -7,7 +7,7 @@
 #include "PWatcher/PWFdBase/PWIo.h"
 #include "Logger.h"
 
-using namespace PUMP;
+using namespace Pump;
 
 /**
  * @class OnAccept

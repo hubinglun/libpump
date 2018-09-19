@@ -4,7 +4,7 @@
 
 #include "WatcherContainer.h"
 
-namespace PUMP {
+namespace Pump {
 
 ////////////////////////////////////////////////
 //                   WatcherList

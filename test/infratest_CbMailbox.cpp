@@ -38,7 +38,7 @@ void testScene0(){
 /** 测试 场景<2> 回调链表 CbList 能否正常工作
  * */
 void testScene1(){
-	PUMP::CbList aFnList;
+	Pump::CbList aFnList;
 
 	PtrCbFn afn(new cb_func1(3));
 	boost::shared_ptr<cb_func1> ptr1 = dynamic_pointer_cast<cb_func1>(afn);
@@ -70,7 +70,7 @@ void testScene1(){
 /** 测试 场景<3> 回调邮箱 CbMailbox 能否正常工作
  * */
 void testScene2() {
-	PUMP::CbQueueMailbox cbMB;
+	Pump::CbQueueMailbox cbMB;
 
 	PtrCbFn afn(new cb_func1(3));
 	boost::shared_ptr<cb_func1> ptr1 = dynamic_pointer_cast<cb_func1>(afn);

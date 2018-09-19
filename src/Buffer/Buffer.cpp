@@ -4,7 +4,7 @@
 
 nsp_std::allocator<char> s_allocIobuf;
 
-namespace PUMP {
+namespace Pump {
 
 ////////////////////////////////////////////////
 //                   IoBuffer

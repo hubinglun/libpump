@@ -6,7 +6,7 @@
 #include "Logger.h"
 
 using namespace std;
-using namespace PUMP;
+using namespace Pump;
 using namespace boost;
 
 class TestThread

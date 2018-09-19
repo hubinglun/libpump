@@ -4,7 +4,7 @@
 
 #include "FdServiceDef.h"
 
-namespace PUMP {
+namespace Pump {
 
 }
 

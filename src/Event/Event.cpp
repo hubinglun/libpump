@@ -8,7 +8,7 @@
  */
 #include "Event.h"
 
-namespace PUMP {
+namespace Pump {
 
 ////////////////////////////////////////////////
 //                   Event

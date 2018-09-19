@@ -1,15 +1,16 @@
 cmake_minimum_required(VERSION 3.5)
 project(libpump)
 
-set(CMAKE_CXX_STANDARD 98)
+set(CMAKE_CXX_STANDARD 11)
 
 include(CMake/Dependance.cmake)
 
 aux_source_directory(./src DIRSRCS)
 aux_source_directory(./src/Buffer DIRSRCS)
 aux_source_directory(./src/PWatcher DIRSRCS)
-aux_source_directory(src/PWatcher/PWFdBase DIRSRCS)
+aux_source_directory(./src/PWatcher/PWFdBase DIRSRCS)
 aux_source_directory(./src/Event DIRSRCS)
+aux_source_directory(src/MemMgr DIRSRCS)
 set(SRC ./src/ src/Buffer/ src/PWatcher/PWFdBase/ ${DIRSRCS})
 message(">>> SRC: ${SRC}")
 
@@ -42,3 +43,6 @@ target_link_libraries(infratest_Watcher ${all_libs} pump)
 
 add_executable(infrastest_Thread test/infrastest_Thread.cpp)
 target_link_libraries(infrastest_Thread ${all_libs} pump)
+
+add_executable(infrastest_SmartPtr test/infrastest_SmartPtr.cpp)
+target_link_libraries(infrastest_SmartPtr ${all_libs} pump)

@@ -14,7 +14,7 @@
 
 namespace nsp_boost = ::boost;
 
-namespace PUMP {
+namespace Pump {
 
 class PThread
   : public nsp_boost::noncopyable {

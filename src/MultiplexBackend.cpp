@@ -4,7 +4,7 @@
 
 #include "MultiplexBackend.h"
 
-namespace PUMP {
+namespace Pump {
 
 Select::Select() {
   init();

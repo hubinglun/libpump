@@ -18,7 +18,7 @@
 
 namespace nsp_boost = ::boost;
 
-namespace PUMP {
+namespace Pump {
 
 #define PUMP_ABSTRACT  /** 修饰抽象类 */
 #define PUMP_INTERFACE  /** 修饰接口类 */
