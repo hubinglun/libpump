@@ -1,6 +1,6 @@
 #include "KMP.h"
 
-namespace PUMP {
+namespace Pump {
 
 KMP::KMP() {
 }

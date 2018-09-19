@@ -13,7 +13,7 @@
 
 using namespace boost;
 using namespace std;
-using namespace PUMP;
+using namespace Pump;
 
 ///< 测试用例 <1> 带返回值, 带参数值函数
 int func1(int i) {

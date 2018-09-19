@@ -29,7 +29,7 @@
 namespace nsp_std = std;
 namespace nsp_boost = boost;
 
-namespace PUMP {
+namespace Pump {
 
 /**
  * @class Buffer

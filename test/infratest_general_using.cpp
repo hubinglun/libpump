@@ -12,7 +12,7 @@
 
 using namespace std;
 using namespace boost;
-using namespace PUMP;
+using namespace Pump;
 
 class test_A{
 protected:

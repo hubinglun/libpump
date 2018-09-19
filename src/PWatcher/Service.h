@@ -17,7 +17,7 @@
 
 namespace nsp_boost = boost;
 
-namespace PUMP {
+namespace Pump {
 
 /**
  * @class NetService

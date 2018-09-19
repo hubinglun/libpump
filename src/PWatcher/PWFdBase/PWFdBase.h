@@ -26,7 +26,7 @@
 #include "Buffer/Buffer.h"
 #include "Logger.h"
 
-namespace PUMP {
+namespace Pump {
 
 /**
  * @class FdBaseWatcher []

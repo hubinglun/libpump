@@ -9,7 +9,7 @@
 
 #include "pumpdef.h"
 
-namespace PUMP {
+namespace Pump {
 
 class Pump;
 typedef nsp_boost::shared_ptr<Pump> PtrPump;

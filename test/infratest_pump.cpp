@@ -13,7 +13,7 @@
 #include "infratest_CbMailbox.h"
 
 using namespace google;
-using namespace PUMP;
+using namespace Pump;
 
 void initMailbox(PtrCbMailbox pMailbox) {
 //	CbQueueMailbox cbMB;

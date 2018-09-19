@@ -12,7 +12,7 @@
 
 #include "PWatcher.h"
 
-namespace PUMP {
+namespace Pump {
 
 /**
  * @class WatcherContainer []

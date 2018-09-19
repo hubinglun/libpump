@@ -4,7 +4,7 @@
 
 #include "Thread.h"
 
-namespace PUMP {
+namespace Pump {
 
 //void PThread::start(pThreadCbFn pFn , Pump * pPump, PtrArg pIn, PtrArg pOut) {
 //  nsp_boost::function0<void> cb = nsp_boost::bind(pFn, pPump.get(), pIn, pOut);

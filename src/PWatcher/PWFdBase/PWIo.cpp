@@ -9,7 +9,7 @@
 
 #include "PWIo.h"
 
-namespace PUMP {
+namespace Pump {
 
 ////////////////////////////////////////////////
 //                   PWIo

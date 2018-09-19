@@ -27,7 +27,7 @@
 
 namespace nsp_boost = ::boost;
 
-namespace PUMP {
+namespace Pump {
 
 class FdService;
 typedef nsp_boost::shared_ptr<FdService> PtrFdService;

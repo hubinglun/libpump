@@ -4,6 +4,6 @@
 
 #include "FdDef.h"
 
-namespace PUMP {
+namespace Pump {
 
 }

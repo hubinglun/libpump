@@ -33,7 +33,7 @@
 namespace nsp_std = ::std;
 namespace nsp_boost = ::boost;
 
-namespace PUMP {
+namespace Pump {
 
 /**
  * @typedef typedef nsp_boost::shared_ptr<void> PtrArg

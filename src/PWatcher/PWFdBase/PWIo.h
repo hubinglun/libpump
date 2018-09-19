@@ -22,7 +22,7 @@
 #include "PWFdBase.h"
 #include "FdDef.h"
 
-namespace PUMP {
+namespace Pump {
 
 class PWIo;
 
