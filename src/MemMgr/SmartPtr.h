@@ -23,6 +23,8 @@ nsp_std::allocator<char> &getAlloc();
 
 nsp_std::list<nsp_boost::shared_ptr<void> > &getHeapList();
 
+class Void {};
+
 template<class _T>
 void DelMem(_T *p) {
   p->~_T();

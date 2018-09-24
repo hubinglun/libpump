@@ -5,6 +5,8 @@
 #include "Thread.h"
 #include "Logger.h"
 
+#include <boost/make_shared.hpp>
+
 using namespace std;
 using namespace Pump;
 using namespace boost;
@@ -22,7 +24,7 @@ public:
 
 int main(){
   TestThread athread;
-  athread.m_pRealThread = make_shared<boost::thread>(boost::bind(&TestThread::threadCb, &athread, PtrArg(), PtrArg()));
+  athread.m_pRealThread = boost::make_shared<boost::thread>(boost::bind(&TestThread::threadCb, &athread, PtrArg(), PtrArg()));
   athread.m_pRealThread->join();
   return 0;
 }
