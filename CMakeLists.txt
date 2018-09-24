@@ -14,16 +14,31 @@ aux_source_directory(src/MemMgr DIRSRCS)
 set(SRC ./src/ src/Buffer/ src/PWatcher/PWFdBase/ ${DIRSRCS})
 message(">>> SRC: ${SRC}")
 
+# test code level: DEBUG(0) INFO(1) WARN(2) ERROR(3) CRITICAL(4) RELEASE(5)
+set(debug_level 0) # 用户设置编译选项
+if(${debug_level} LESS 1)
+    set(Db_Flage -D_TEST_LEVEL_DEBUG -D_TEST_LEVEL_INFO -D_TEST_LEVEL_WARN -D_TEST_LEVEL_ERROR -D_TEST_LEVEL_CRITICAL)
+elseif(${debug_level} LESS 2)
+    set(Db_Flage -D_TEST_LEVEL_INFO -D_TEST_LEVEL_WARN -D_TEST_LEVEL_ERROR -D_TEST_LEVEL_CRITICAL)
+elseif(${debug_level} LESS 3)
+    set(Db_Flage -D_TEST_LEVEL_WARN -D_TEST_LEVEL_ERROR -D_TEST_LEVEL_CRITICAL)
+elseif(${debug_level} LESS 4)
+    set(Db_Flage -D_TEST_LEVEL_ERROR -D_TEST_LEVEL_CRITICAL)
+elseif(${debug_level} LESS 5)
+    set(Db_Flage -D_TEST_LEVEL_CRITICAL)
+else(${debug_level} LESS 6)
+    set(Db_Flage )
+endif()
+message(">>> Debug: ${Db_Flage}")
+
 include_directories(./src)
-# test code level: DEBUG INFO TRACE
-add_compile_options(-D_TEST_LEVEL_INFO -DBOOST_THREAD_USE_LIB=1 -Wno-write-strings -lpthread -fPIC)
+add_compile_options(${Db_Flage} -DBOOST_THREAD_USE_LIB=1 -Wno-write-strings -lpthread -fPIC)
 set(all_libs ${Boost_LIBRARIES} ${glog_libs} ${protobuf_libs})
 message(">>> LIBS: ${all_libs}")
 
 # 产生动态库 libpump.so
 link_libraries(${all_libs})
 add_library(pump SHARED ${SRC})
-
 
 # 测试代码
 add_executable(infratest_CbMailbox test/infratest_CbMailbox.cpp)
