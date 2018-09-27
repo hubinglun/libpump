@@ -56,7 +56,7 @@ private:
   typedef VoidPtr this_type;
 public:
   VoidPtr() BOOST_NOEXCEPT
-    : /*m_alloc(getAlloc()),*/
+    : m_pParent(0),
     m_iCapacity(0),
     m_iSize(0),
     m_px(0),
@@ -66,8 +66,8 @@ public:
 
 #ifndef BOOST_NO_CXX11_NULLPTR
   
-  VoidPtr(boost::detail::sp_nullptr_t) BOOST_NOEXCEPT
-    : /*m_alloc(getAlloc()),*/
+  VoidPtr(boost::detail::sp_nullptr_t, VoidPtr * const parent = 0) BOOST_NOEXCEPT
+    : m_pParent(parent),
     m_iCapacity(0),
     m_iSize(0),
     m_px(0),
@@ -78,8 +78,8 @@ public:
 #endif //BOOST_NO_CXX11_NULLPTR
   
   template<class A = std::allocator<char> >
-  explicit VoidPtr(A &a, const size_t size) BOOST_NOEXCEPT
-    : /*m_alloc(a),*/
+  explicit VoidPtr(A &a, const size_t size, VoidPtr * parent = 0) BOOST_NOEXCEPT
+    : m_pParent(parent),
     m_iCapacity(size),
     m_iSize(0),
     m_px(0),
@@ -93,8 +93,8 @@ public:
     m_pn = SharedCount(m_px, m_iCapacity, a);
   }
   
-  explicit VoidPtr(const size_t size) BOOST_NOEXCEPT
-    : /*m_alloc(a),*/
+  explicit VoidPtr(const size_t size, VoidPtr * parent = 0) BOOST_NOEXCEPT
+    : m_pParent(parent),
     m_iCapacity(size),
     m_iSize(0),
     m_px(0),
@@ -109,8 +109,8 @@ public:
   }
   
   template<class A = std::allocator<char>, class D>
-  explicit VoidPtr(A &a, const size_t size, D del) BOOST_NOEXCEPT
-    : /*m_alloc(a),*/
+  explicit VoidPtr(A &a, const size_t size, D del, VoidPtr * parent = 0) BOOST_NOEXCEPT
+    : m_pParent(parent),
     m_iCapacity(size),
     m_iSize(0),
     m_px(0),
@@ -125,8 +125,8 @@ public:
   }
   
   template<class D>
-  explicit VoidPtr(const size_t size, D del) BOOST_NOEXCEPT
-    : /*m_alloc(a),*/
+  explicit VoidPtr(const size_t size, D del, nullptr_t , VoidPtr * parent = 0) BOOST_NOEXCEPT
+    : m_pParent(parent),
     m_iCapacity(size),
     m_iSize(0),
     m_px(0),
@@ -141,8 +141,8 @@ public:
   }
   
   template<class A = std::allocator<char> >
-  VoidPtr(A &a, void *px, const size_t size) BOOST_NOEXCEPT
-    : /*m_alloc(a),*/
+  VoidPtr(A &a, void *px, const size_t size, VoidPtr * parent = 0) BOOST_NOEXCEPT
+    : m_pParent(parent),
     m_iCapacity(size),
     m_iSize(0),
     m_px(px),
@@ -150,8 +150,8 @@ public:
     m_pn = SharedCount(m_px, m_iCapacity, a);
   }
   
-  VoidPtr(void *px, const size_t size) BOOST_NOEXCEPT
-    : /*m_alloc(a),*/
+  VoidPtr(void *px, const size_t size, VoidPtr * parent = 0) BOOST_NOEXCEPT
+    : m_pParent(parent),
     m_iCapacity(size),
     m_iSize(0),
     m_px(px),
@@ -160,8 +160,8 @@ public:
   }
   
   template<class A = std::allocator<char>, class D>
-  VoidPtr(A &a, void *px, const size_t size, D del) BOOST_NOEXCEPT
-    : /*m_alloc(a),*/
+  VoidPtr(A &a, void *px, const size_t size, D del, VoidPtr * parent = 0) BOOST_NOEXCEPT
+    : m_pParent(parent),
     m_iCapacity(size),
     m_iSize(0),
     m_px(px),
@@ -170,8 +170,8 @@ public:
   }
   
   template<class D>
-  VoidPtr(void *px, const size_t size, D del) BOOST_NOEXCEPT
-    : /*m_alloc(a),*/
+  VoidPtr(void *px, const size_t size, D del, VoidPtr * parent = 0) BOOST_NOEXCEPT
+    : m_pParent(parent),
     m_iCapacity(size),
     m_iSize(0),
     m_px(px),
@@ -179,8 +179,8 @@ public:
     m_pn = SharedCount(m_px, m_iCapacity, getAlloc(), del);
   }
   
-  VoidPtr(VoidPtr const &r) BOOST_NOEXCEPT
-    : /*m_alloc(r.m_alloc),*/
+  VoidPtr(VoidPtr const &r, VoidPtr * parent = 0) BOOST_NOEXCEPT
+    : m_pParent(parent),
     m_iCapacity(r.m_iCapacity),
     m_iSize(r.m_iSize),
     m_px(r.m_px),
@@ -189,8 +189,8 @@ public:
 
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
   
-  VoidPtr(VoidPtr &&r) BOOST_NOEXCEPT
-    : /*m_alloc(r.m_alloc),*/
+  VoidPtr(VoidPtr &&r, VoidPtr * parent = 0) BOOST_NOEXCEPT
+    : m_pParent(parent),
     m_iCapacity(r.m_iCapacity),
     m_iSize(r.m_iSize),
     m_px(r.m_px),
@@ -213,7 +213,13 @@ public:
 #ifdef _TEST_LEVEL_DEBUG
     assert(m_iCapacity >= m_iSize);
 #endif //_TEST_LEVEL_DEBUG
+  
+    // 跟新指针的入度&出度
+    this->m_pParent->m_pn.addOutdegree(r.get());
+    r.m_pn.addIndegree(this->m_pParent->get());
+    
     this_type(static_cast< VoidPtr && >(r)).swap(*this);
+    
     return *this;
   }
 
@@ -223,7 +229,13 @@ public:
 #ifdef _TEST_LEVEL_DEBUG
     assert(m_iCapacity >= m_iSize);
 #endif //_TEST_LEVEL_DEBUG
+  
+    // 跟新指针的入度&出度
+    m_pParent->m_pn.addOutdegree(r.get());
+    const_cast<VoidPtr&>(r).m_pn.addIndegree(m_pParent->get());
+    
     this_type(r).swap(*this);
+    
     return *this;
   }
 
@@ -314,6 +326,10 @@ public:
   void *get() const {
     return (m_px);
   }
+  
+  VoidPtr * const parent() {
+    return m_pParent;
+  }
 
 protected:
   template<class T>
@@ -333,9 +349,26 @@ public:
 //  }
 
 protected:
+  /**
+   * @var m_pParent
+   * @brief 父指针对象, 父指针托管的内存成员中包含本指针托管的内存
+   */
+  VoidPtr * const m_pParent;
+  /**
+   * @var m_iCapacity
+   * @brief 托管内存大小
+   */
   size_t m_iCapacity;
   size_t m_iSize;
-  void *m_px;
+  /**
+   * @var m_px
+   * @brief 托管内存起始地址
+   */
+  void * m_px;
+  /**
+   * @var m_pn
+   * @brief 应用计数对象
+   */
   SharedCount m_pn;
 };
 
