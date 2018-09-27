@@ -163,6 +163,24 @@ void test_VoidPtr_1() {
 //  LOG_IF(INFO,(pInt0.relative(pCh) == RELATIVE_INCLUDE))<<"[OK] test_SmartPrt_1 test 4-1";
 }
 
+void test_VoidPtr_2() {
+  LOG(INFO) << "*****test 1*****";
+  VoidPtr p1(sizeof(int), 0);
+  VoidPtr p1_1(sizeof(int), &p1);
+  VoidPtr p1_2(sizeof(int), &p1);
+  VoidPtr p2(sizeof(int), 0);
+  VoidPtr p2_1(sizeof(int), &p2);
+  VoidPtr p3(sizeof(int), 0);
+  VoidPtr p3_1(sizeof(int), &p3);
+  // 指向自身
+  p1_2 = p1;
+  // 循环指向
+  p1_1 = p2;
+  p2_1 = p3;
+  p3_1 = p1;
+  
+}
+
 void test_SharedPtr_1() {
   std::allocator<char> alloc;
   
@@ -209,8 +227,8 @@ int main(){
 //  test_SmartPrt_0();
 //  test_template();
 //  test_VoidPtr_1();
-  test_SharedPtr_1();
-  
+//  test_SharedPtr_1();
+  test_VoidPtr_2();
   return 0;
 }
 
