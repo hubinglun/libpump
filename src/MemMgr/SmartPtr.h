@@ -23,7 +23,101 @@ nsp_std::allocator<char> &getAlloc();
 
 nsp_std::list<nsp_boost::shared_ptr<void> > &getHeapList();
 
-class Void {};
+class Void {
+};
+
+enum RelativeType {
+  RELATIVE_INTERSECT,
+  RELATIVE_INCLUDE,
+  RELATIVE_NONE,
+  RELATIVE_EQUAL,
+};
+
+typedef struct tagBlock {
+  /**
+   * @var m_iCapacity
+   * @brief 托管内存大小
+   */
+  size_t m_iCapacity;
+  /**
+   * @var m_iSize
+   */
+  size_t m_iSize;
+  /**
+   * @var m_px
+   * @brief 托管内存起始地址
+   */
+  void *m_px;
+  
+  tagBlock()
+    : m_iCapacity(0),
+      m_iSize(0),
+      m_px(0) {
+  }
+  
+  tagBlock(const size_t iCapacity, const size_t iSize, void *px)
+    : m_iCapacity(iCapacity),
+      m_iSize(iSize),
+      m_px(px) {
+  }
+  
+  tagBlock(const tagBlock &r)
+    : m_iCapacity(r.m_iCapacity),
+      m_iSize(r.m_iSize),
+      m_px(r.m_px) {
+  }
+  
+  tagBlock &operator==(const tagBlock &r) {
+    m_iCapacity = (r.m_iCapacity);
+    m_iSize = (r.m_iSize);
+    m_px = (r.m_px);
+    return *this;
+  }
+  
+  void swap(tagBlock &r) {
+    std::swap(m_iCapacity, r.m_iCapacity);
+    std::swap(m_iSize, r.m_iSize);
+    std::swap(m_px, r.m_px);
+  }
+  
+  template<class T>
+  T *rget() {
+    if (sizeof(T) > this->m_iCapacity) {
+      // FIXME 抛出异常, 或者其他识别错误的方案
+      throw 1;
+    }
+    return (static_cast<T *>(this->m_px));
+  }
+  
+  template<class T>
+  T *get() const {
+    if (sizeof(T) > this->m_iCapacity) {
+      // FIXME 抛出异常, 或者其他识别错误的方案
+      throw 1;
+    }
+    return (static_cast<T *>(m_px));
+  }
+  
+  enum RelativeType relative(tagBlock const &r) const {
+    if (m_px == nullptr || r.m_px == nullptr) {
+      return RELATIVE_NONE;
+    }
+    if (m_px == r.m_px
+        && (char *) m_px + m_iCapacity ==
+           (char *) r.m_px + r.m_iCapacity) {
+      return RELATIVE_EQUAL;
+    } else if ((m_px <= r.m_px
+                && (char *) m_px + m_iCapacity >=
+                   (char *) r.m_px + r.m_iCapacity)
+               || (m_px >= r.m_px
+                   && (char *) m_px + m_iCapacity <=
+                      (char *) r.m_px + r.m_iCapacity)) {
+      return RELATIVE_INCLUDE;
+    } else {
+      return RELATIVE_INTERSECT;
+    }
+  }
+} Block;
 
 template<class _T>
 void DelMem(_T *p) {
