@@ -3,7 +3,8 @@
 //
 
 #include "MemMgr/SmartPtr.h"
-#include "MemMgr/VoidPtr.hpp"
+#include "MemMgr/VoidSPtr.hpp"
+#include "MemMgr/VoidWPtr.hpp"
 #include "MemMgr/SharedPtr.hpp"
 #include "Logger.h"
 
@@ -116,21 +117,21 @@ public:
   }
 };
 
-void test_VoidPtr_1() {
+void test_VoidSPtr_1() {
   std::allocator<char> loc_alloc;
   // test 1
   LOG(INFO)<<">>>>>>>test 1 [4]<<<<<<<<";
-  VoidPtr p_0;
+  VoidSPtr p_0;
   LOG_IF(INFO,(p_0 == nullptr))<<"[OK] test_SmartPrt_1 test 1-1";
-  VoidPtr p_1(loc_alloc, sizeof(int));
+  VoidSPtr p_1(loc_alloc, sizeof(int));
   p_0 = p_1;
   LOG_IF(INFO,(p_0.get<int>()==p_1.get<int>()))<<"[OK] test_SmartPrt_1 test 1-2";
-  VoidPtr p_1_2 = p_1;
+  VoidSPtr p_1_2 = p_1;
   LOG_IF(INFO,(p_1_2.use_count()==p_0.use_count()))<<"[OK] test_SmartPrt_1 test 1-3 ";
   
   // test 2
   int * pInt = new int(1024);
-  VoidPtr p_2(loc_alloc, (void*)pInt, sizeof(int));
+  VoidSPtr p_2(loc_alloc, (void*)pInt, sizeof(int));
   p_1_2 = p_2;
   LOG_IF(INFO,(p_0.use_count()==2))<<"[OK] test_SmartPrt_1 test 1-4 ";
   p_2.reset();
@@ -141,11 +142,11 @@ void test_VoidPtr_1() {
   LOG_IF(INFO,(nullptr == p_2)&&(p_2.use_count()==0))<<"[OK] test_SmartPrt_1 test 2-3";
   
   LOG(INFO)<<">>>>>>>test 3 [3]<<<<<<<<";
-  VoidPtr p_3(loc_alloc, 25);
-  VoidPtr p_4(45);
-  VoidPtr p_3_1(p_3);
+  VoidSPtr p_3(loc_alloc, 25);
+  VoidSPtr p_4(45);
+  VoidSPtr p_3_1(p_3);
   LOG_IF(INFO,(p_3_1.capacity() == 25)&&(p_4.capacity()==45))<<"[OK] test_SmartPrt_1 test 3-1";
-  VoidPtr p_5(loc_alloc, 18, _Del());
+  VoidSPtr p_5(loc_alloc, 18, _Del());
   p_5.reset();
   LOG_IF(INFO,(p_5 == nullptr))<<"[OK] test_SmartPrt_1 test 3-2";
   p_5.reset(p_4);
@@ -156,22 +157,22 @@ void test_VoidPtr_1() {
 //  int * rpInt0 = new int(1024);
 //  char * rpCh = (char*)rpInt0 + 1;
 //  LOG(INFO)<< *rpInt0 << ", " << rpCh;
-//  VoidPtr pInt0((void*)rpInt0, sizeof(int));
-//  VoidPtr pCh((void*)rpCh, sizeof(char));
+//  VoidSPtr pInt0((void*)rpInt0, sizeof(int));
+//  VoidSPtr pCh((void*)rpCh, sizeof(char));
 //  LOG(INFO)<< "pInt0 "<< pInt0;
 //  LOG(INFO)<< "pCh "<< pCh;
 //  LOG_IF(INFO,(pInt0.relative(pCh) == RELATIVE_INCLUDE))<<"[OK] test_SmartPrt_1 test 4-1";
 }
 
-void test_VoidPtr_2() {
+void test_VoidSPtr_2() {
   LOG(INFO) << "*****test 1*****";
-  VoidPtr p1(sizeof(int), 0);
-  VoidPtr p1_1(sizeof(int), &p1);
-  VoidPtr p1_2(sizeof(int), &p1);
-  VoidPtr p2(sizeof(int), 0);
-  VoidPtr p2_1(sizeof(int), &p2);
-  VoidPtr p3(sizeof(int), 0);
-  VoidPtr p3_1(sizeof(int), &p3);
+  VoidSPtr p1(sizeof(int), 0);
+  VoidSPtr p1_1(sizeof(int), &p1);
+  VoidSPtr p1_2(sizeof(int), &p1);
+  VoidSPtr p2(sizeof(int), 0);
+  VoidSPtr p2_1(sizeof(int), &p2);
+  VoidSPtr p3(sizeof(int), 0);
+  VoidSPtr p3_1(sizeof(int), &p3);
   // 指向自身
   p1_2 = p1;
   // 循环指向
@@ -206,7 +207,7 @@ void test_SharedPtr_1() {
   LOG_IF(INFO, (spB_1 == spB_1_1)&&(spB_1 == spB_1_2))<<"[OK] test 2-2";
   SharedPtr<Void> spVoid;
   spVoid = spB_1_2;
-  VoidPtr pVoid = &spB_1_2;
+  VoidSPtr pVoid = &spB_1_2;
   LOG_IF(INFO, (pVoid == spB_1_2) && (pVoid.use_count()==5))<<"[OK] test 2-3";
   
   // test 3
@@ -223,12 +224,31 @@ void test_template() {
   template_A<std::allocator<int> > e;
 }
 
+void test_VoidWPtr() {
+  std::allocator<char> alloc;
+  // test 1
+  VoidSPtr spB_1(alloc, 10);
+  VoidWPtr wpB_1(spB_1);
+  LOG_IF(INFO, (spB_1.use_count() == wpB_1.use_count())) << "[OK] test 1-1";
+  wpB_1.reset();
+  LOG_IF(INFO, (spB_1 != nullptr && wpB_1.expired())) << "[OK] test 1-2";
+  spB_1.reset();
+  spB_1 = wpB_1.lock();
+  LOG_IF(INFO, (spB_1 == nullptr && wpB_1.expired())) << "[OK] test 1-3";
+}
+
 int main(){
 //  test_SmartPrt_0();
 //  test_template();
-//  test_VoidPtr_1();
+//  test_VoidSPtr_1();
 //  test_SharedPtr_1();
-  test_VoidPtr_2();
+//  test_VoidSPtr_2();
+  test_VoidWPtr();
+  
+  boost::shared_ptr<int> spint = boost::make_shared<int>(1);
+  boost::weak_ptr<int> wpint(spint);
+  spint.reset();
+  spint = wpint.lock();
   return 0;
 }
 

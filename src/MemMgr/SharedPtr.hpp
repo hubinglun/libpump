@@ -4,7 +4,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "SmartPtr.h"
-#include "VoidPtr.hpp"
+#include "VoidSPtr.hpp"
 
 namespace nsp_boost = boost;
 
@@ -21,7 +21,7 @@ enum SpState {
 
 template<class T>
 class SharedPtr
-  : public VoidPtr {
+  : public VoidSPtr {
 protected:
   typedef SharedPtr<T> this_type;
 public:
@@ -29,7 +29,7 @@ public:
   typedef typename nsp_boost::detail::sp_element<T>::type element_type;
   
   SharedPtr() BOOST_NOEXCEPT
-    : VoidPtr(),
+    : VoidSPtr(),
       m_state(SP_STATE_NULL) {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "SharedPtr()";
@@ -40,7 +40,7 @@ public:
 #ifndef BOOST_NO_CXX11_NULLPTR
   
   SharedPtr(boost::detail::sp_nullptr_t/*占位参数*/) BOOST_NOEXCEPT
-    : VoidPtr(getAlloc(), sizeof(element_type)),
+    : VoidSPtr(getAlloc(), sizeof(element_type)),
       m_state(SP_STATE_NEW) {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "SharedPtr()";
@@ -51,7 +51,7 @@ public:
   
   template<class A>
   explicit SharedPtr(A &a, boost::detail::sp_nullptr_t/*占位参数*/) BOOST_NOEXCEPT
-    : VoidPtr(a, sizeof(element_type)),
+    : VoidSPtr(a, sizeof(element_type)),
       m_state(SP_STATE_NEW) {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "SharedPtr()";
@@ -60,7 +60,7 @@ public:
   
   template<class A, class D>
   SharedPtr(A &a, D d) BOOST_NOEXCEPT
-    : VoidPtr(a, sizeof(element_type), d),
+    : VoidSPtr(a, sizeof(element_type), d),
       m_state(SP_STATE_NEW) {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "SharedPtr()";
@@ -68,7 +68,7 @@ public:
   }
   
   SharedPtr(SharedPtr const &r) BOOST_NOEXCEPT
-    : VoidPtr(static_cast<VoidPtr const &>(r)),
+    : VoidSPtr(static_cast<VoidSPtr const &>(r)),
       m_state(r.m_state) {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "SharedPtr()";
@@ -77,7 +77,7 @@ public:
   
   virtual ~SharedPtr() {
     if (*this != nullptr
-      && m_state==SP_STATE_INIT) {
+        && m_state == SP_STATE_INIT) {
       destroy();
     }
 #ifdef _TEST_LEVEL_INFO
@@ -85,9 +85,9 @@ public:
 #endif //_TEST_LEVEL_INFO
   }
   
-  template <class Y>
+  template<class Y>
   SharedPtr &operator=(SharedPtr<Y> const &r) {
-    VoidPtr::operator=(static_cast<VoidPtr const &>(r));
+    VoidSPtr::operator=(static_cast<VoidSPtr const &>(r));
     m_state = r.state();
     return *this;
   }
@@ -102,22 +102,22 @@ public:
   }
   
   void destroy() {
-    if(typeid(element_type) != typeid(void)) {
+    if (typeid(element_type) != typeid(void)) {
       this->rget<element_type>()->~element_type();
       m_state = SP_STATE_NEW;
     }
   }
   
   const element_type &operator*() const {
-    return *(VoidPtr::get<element_type>());
+    return *(VoidSPtr::get<element_type>());
   }
-
-  VoidPtr operator&() const {
-    return static_cast<VoidPtr>(*this);
+  
+  VoidSPtr operator&() const {
+    return static_cast<VoidSPtr>(*this);
   }
   
   element_type *operator->() const {
-    return (VoidPtr::get<element_type>());
+    return (VoidSPtr::get<element_type>());
   }
   
   enum SpState state() const {
