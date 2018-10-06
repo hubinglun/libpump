@@ -15,14 +15,16 @@ namespace MemMgr {
 
 //template <class A=std::allocator<char> >
 
+class WeakCount;
+
 class SharedCount {
 private:
   
   nsp_boost::detail::sp_counted_base *pi_;
   
-  AdjacencyNode * pAdj_;
-
-//  friend class weak_count;
+  AdjacencyNode *pAdj_;
+  
+  friend class WeakCount;
 
 public:
   
@@ -33,26 +35,26 @@ public:
   template<class A>
   explicit SharedCount(void *p, size_t iSize, A &alloc)
     : pi_(0),
-      pAdj_(0){
+      pAdj_(0) {
     try {
-      pi_ = (SpCountedImpl_a<A>*)alloc.allocate(sizeof(SpCountedImpl_a<A>));
+      pi_ = (SpCountedImpl_a<A> *) alloc.allocate(sizeof(SpCountedImpl_a<A>));
       ::new(pi_)SpCountedImpl_a<A>(p, iSize, alloc);
       // FIXME [general] 应该改为使用分配器构造,但是SpCountedImpl_a基类sp_counted_base不允许, 需要改造
 //      pi_ = new SpCountedImpl_a<A>(p, iSize, alloc);
     }
     catch (...) {
       // 引用计数器构造失败, 则需要删除对象
-      alloc.deallocate((typename A::pointer)p, iSize);
+      alloc.deallocate((typename A::pointer) p, iSize);
       throw;
     }
     try {
-      pAdj_ = (AdjacencyNode*)alloc.allocate(sizeof(AdjacencyNode_a<A>));
+      pAdj_ = (AdjacencyNode *) alloc.allocate(sizeof(AdjacencyNode_a<A>));
       ::new(pAdj_)AdjacencyNode_a<A>(alloc);
     }
     catch (...) {
       // 引用计数器构造失败, 则需要删除对象
-      alloc.deallocate((typename A::pointer)pi_, sizeof(SpCountedImpl_a<A>));
-      alloc.deallocate((typename A::pointer)p, iSize);
+      alloc.deallocate((typename A::pointer) pi_, sizeof(SpCountedImpl_a<A>));
+      alloc.deallocate((typename A::pointer) p, iSize);
       throw;
     }
   }
@@ -61,8 +63,8 @@ public:
   SharedCount(void *p, size_t iSize, A &alloc, D d)
     : pi_(0), pAdj_(0) {
     try {
-      pi_ = (SpCountedImpl_ad<A, D>*)alloc.allocate(sizeof(SpCountedImpl_ad<A, D>));
-      ::new(pi_)SpCountedImpl_ad<A, D>(p,iSize, alloc, d);
+      pi_ = (SpCountedImpl_ad<A, D> *) alloc.allocate(sizeof(SpCountedImpl_ad<A, D>));
+      ::new(pi_)SpCountedImpl_ad<A, D>(p, iSize, alloc, d);
       // FIXME [general] 应该改为使用分配器构造,但是SpCountedImpl_ad基类sp_counted_base不允许, 需要改造
 //      pi_ = new SpCountedImpl_ad<A, D>(p,iSize, alloc, d);
     }
@@ -71,13 +73,13 @@ public:
       throw;
     }
     try {
-      pAdj_ = (AdjacencyNode*)alloc.allocate(sizeof(AdjacencyNode_a<A>));
+      pAdj_ = (AdjacencyNode *) alloc.allocate(sizeof(AdjacencyNode_a<A>));
       ::new(pAdj_)AdjacencyNode_a<A>(alloc);
     }
     catch (...) {
       // 引用计数器构造失败, 则需要删除对象
-      alloc.deallocate((typename A::pointer)pi_, sizeof(SpCountedImpl_ad<A, D>));
-      alloc.deallocate((typename A::pointer)p, iSize);
+      alloc.deallocate((typename A::pointer) pi_, sizeof(SpCountedImpl_ad<A, D>));
+      alloc.deallocate((typename A::pointer) p, iSize);
       throw;
     }
   }
@@ -85,7 +87,7 @@ public:
   ~SharedCount() // nothrow
   {
     if (pi_ != 0) pi_->release();
-    if (pAdj_ != 0 && pi_->use_count()==0) pAdj_->release();
+    if (pAdj_ != 0 && pi_->use_count() == 0) pAdj_->release();
   }
   
   SharedCount(SharedCount const &r) : pi_(r.pi_), pAdj_(r.pAdj_) // nothrow
@@ -97,9 +99,10 @@ public:
   {
     r.pi_ = 0;
   }
-
-//  explicit SharedCount(weak_count const & r); // throws bad_weak_ptr when r.use_count() == 0
-//  SharedCount( weak_count const & r, nsp_boost::detail::sp_nothrow_tag ); // constructs an empty *this when r.use_count() == 0
+  
+  explicit SharedCount(WeakCount const &r); // throws bad_weak_ptr when r.use_count() == 0
+  SharedCount(WeakCount const &r,
+              nsp_boost::detail::sp_nothrow_tag); // constructs an empty *this when r.use_count() == 0
   
   SharedCount &operator=(SharedCount const &r) // nothrow
   {
@@ -108,16 +111,16 @@ public:
     if (tmp != pi_) {
       if (tmp != 0) tmp->add_ref_copy();
       if (pi_ != 0) {
-        if(pi_->use_count()==1) {
+        if (pi_->use_count() == 1) {
           bDel = true;
         }
         pi_->release();
       }
       pi_ = tmp;
     }
-  
+    
     AdjacencyNode *tmp2 = r.pAdj_;
-  
+    
     if (tmp2 != pAdj_) {
       if (pAdj_ != 0 && bDel) pAdj_->release();
       pAdj_ = tmp2;
@@ -139,8 +142,8 @@ public:
     nsp_boost::detail::sp_counted_base *tmp = r.pi_;
     r.pi_ = pi_;
     pi_ = tmp;
-  
-    AdjacencyNode * tmp2 = r.pAdj_;
+    
+    AdjacencyNode *tmp2 = r.pAdj_;
     r.pAdj_ = pAdj_;
     pAdj_ = tmp2;
   }
@@ -177,6 +180,131 @@ public:
     return pi_ ? pi_->get_untyped_deleter() : 0;
   }
 };
+
+class WeakCount {
+private:
+  
+  nsp_boost::detail::sp_counted_base *pi_;
+  
+  friend class SharedCount;
+
+public:
+  
+  WeakCount() : pi_(0) // nothrow
+#if defined(BOOST_SP_ENABLE_DEBUG_HOOKS)
+  , id_(weak_count_id)
+#endif
+  {
+  }
+  
+  WeakCount(SharedCount const &r) : pi_(r.pi_) // nothrow
+#if defined(BOOST_SP_ENABLE_DEBUG_HOOKS)
+  , id_(weak_count_id)
+#endif
+  {
+    if (pi_ != 0) pi_->weak_add_ref();
+  }
+  
+  WeakCount(WeakCount const &r) : pi_(r.pi_) // nothrow
+  {
+    if (pi_ != 0) pi_->weak_add_ref();
+  }
+
+// Move support
+
+#if !defined( BOOST_NO_CXX11_RVALUE_REFERENCES )
+  
+  WeakCount(WeakCount &&r) : pi_(r.pi_) // nothrow
+#if defined(BOOST_SP_ENABLE_DEBUG_HOOKS)
+  , id_(weak_count_id)
+#endif
+  {
+    r.pi_ = 0;
+  }
+
+#endif
+  
+  ~WeakCount() // nothrow
+  {
+    if (pi_ != 0) pi_->weak_release();
+#if defined(BOOST_SP_ENABLE_DEBUG_HOOKS)
+    id_ = 0;
+#endif
+  }
+  
+  WeakCount &operator=(SharedCount const &r) // nothrow
+  {
+    nsp_boost::detail::sp_counted_base *tmp = r.pi_;
+    
+    if (tmp != pi_) {
+      if (tmp != 0) tmp->weak_add_ref();
+      if (pi_ != 0) pi_->weak_release();
+      pi_ = tmp;
+    }
+    
+    return *this;
+  }
+  
+  WeakCount &operator=(WeakCount const &r) // nothrow
+  {
+    nsp_boost::detail::sp_counted_base *tmp = r.pi_;
+    
+    if (tmp != pi_) {
+      if (tmp != 0) tmp->weak_add_ref();
+      if (pi_ != 0) pi_->weak_release();
+      pi_ = tmp;
+    }
+    
+    return *this;
+  }
+  
+  void swap(WeakCount &r) // nothrow
+  {
+    nsp_boost::detail::sp_counted_base *tmp = r.pi_;
+    r.pi_ = pi_;
+    pi_ = tmp;
+  }
+  
+  long use_count() const // nothrow
+  {
+    return pi_ != 0 ? pi_->use_count() : 0;
+  }
+  
+  bool empty() const // nothrow
+  {
+    return pi_ == 0;
+  }
+  
+  friend inline bool operator==(WeakCount const &a, WeakCount const &b) {
+    return a.pi_ == b.pi_;
+  }
+  
+  friend inline bool operator<(WeakCount const &a, WeakCount const &b) {
+    return std::less<nsp_boost::detail::sp_counted_base *>()(a.pi_, b.pi_);
+  }
+};
+
+inline SharedCount::SharedCount(WeakCount const &r) : pi_(r.pi_)
+#if defined(BOOST_SP_ENABLE_DEBUG_HOOKS)
+, id_(shared_count_id)
+#endif
+{
+  if (pi_ == 0 || !pi_->add_ref_lock()) {
+    boost::throw_exception(boost::bad_weak_ptr());
+  }
+}
+
+inline SharedCount::SharedCount( WeakCount const & r, nsp_boost::detail::sp_nothrow_tag ): pi_( r.pi_ )
+#if defined(BOOST_SP_ENABLE_DEBUG_HOOKS)
+, id_(shared_count_id)
+#endif
+{
+  if( pi_ != 0 && !pi_->add_ref_lock() )
+  {
+    pi_ = 0;
+    pAdj_ = 0;
+  }
+}
 
 }
 }
