@@ -6,6 +6,7 @@
 #include "MemMgr/VoidSPtr.hpp"
 #include "MemMgr/VoidWPtr.hpp"
 #include "MemMgr/SharedPtr.hpp"
+#include "MemMgr/WeakPtr.hpp"
 #include "Logger.h"
 
 using namespace Pump::MemMgr;
@@ -233,8 +234,29 @@ void test_VoidWPtr() {
   wpB_1.reset();
   LOG_IF(INFO, (spB_1 != nullptr && wpB_1.expired())) << "[OK] test 1-2";
   spB_1.reset();
-  spB_1 = wpB_1.lock();
+  spB_1 = wpB_1.lock_raw();
   LOG_IF(INFO, (spB_1 == nullptr && wpB_1.expired())) << "[OK] test 1-3";
+}
+
+void test_WeakPtr() {
+  std::allocator<char> alloc;
+  // test 1
+  SharedPtr<int> spInt_0(alloc,XXX);
+  spInt_0.construct(1);
+  WeakPtr<int> wpInt(spInt_0);
+  SharedPtr<int> spInt_1 = wpInt.lock();
+  LOG_IF(INFO, (spInt_1!= nullptr
+                && spInt_0.use_count() == spInt_1.use_count()
+                && *spInt_1.get<int>()==1)) << "[OK] test 1-1";
+  spInt_0.reset();
+  spInt_0 = wpInt.lock();
+  LOG_IF(INFO, (spInt_0!= nullptr
+                && spInt_0.use_count() == spInt_1.use_count()
+                && *spInt_0.get<int>()==1)) << "[OK] test 1-2";
+  spInt_0.reset();
+  spInt_1.reset();
+  spInt_0 = wpInt.lock();
+  LOG_IF(INFO, (spInt_0 == nullptr&&spInt_0.state()==SP_STATE_NULL)) << "[OK] test 1-3";
 }
 
 int main(){
@@ -243,12 +265,13 @@ int main(){
 //  test_VoidSPtr_1();
 //  test_SharedPtr_1();
 //  test_VoidSPtr_2();
-  test_VoidWPtr();
+//  test_VoidWPtr();
+  test_WeakPtr();
   
-  boost::shared_ptr<int> spint = boost::make_shared<int>(1);
-  boost::weak_ptr<int> wpint(spint);
-  spint.reset();
-  spint = wpint.lock();
+//  boost::shared_ptr<int> spint = boost::make_shared<int>(1);
+//  boost::weak_ptr<int> wpint(spint);
+//  spint.reset();
+//  spint = wpint.lock();
   return 0;
 }
 
