@@ -14,7 +14,7 @@ namespace MemMgr {
 enum SpState {
   SP_STATE_NULL,   //! 空指针
   SP_STATE_NEW,    //! 分配空间
-  SP_STATE_INIT,    //! 已构造
+  SP_STATE_INIT,   //! 已构造
 };
 
 #define XXX nullptr
@@ -24,6 +24,8 @@ class SharedPtr
   : public VoidSPtr {
 protected:
   typedef SharedPtr<T> this_type;
+  
+  template<class Y> friend class WeakPtr;
 public:
   
   typedef typename nsp_boost::detail::sp_element<T>::type element_type;
@@ -36,7 +38,6 @@ public:
 #endif //_TEST_LEVEL_INFO
   }
 
-
 #ifndef BOOST_NO_CXX11_NULLPTR
   
   SharedPtr(boost::detail::sp_nullptr_t/*占位参数*/) BOOST_NOEXCEPT
@@ -48,6 +49,14 @@ public:
   }
 
 #endif //BOOST_NO_CXX11_NULLPTR
+  
+  explicit SharedPtr(const VoidSPtr &r)
+    : VoidSPtr(r),
+      m_state(SP_STATE_NEW) {
+#ifdef _TEST_LEVEL_INFO
+    LOG(INFO) << "SharedPtr()";
+#endif //_TEST_LEVEL_INFO
+  }
   
   template<class A>
   explicit SharedPtr(A &a, boost::detail::sp_nullptr_t/*占位参数*/) BOOST_NOEXCEPT
@@ -118,6 +127,12 @@ public:
   
   element_type *operator->() const {
     return (VoidSPtr::get<element_type>());
+  }
+  
+  virtual void reset() BOOST_NOEXCEPT {
+    this->destroy();
+    VoidSPtr::reset();
+    m_state = SP_STATE_NULL;
   }
   
   enum SpState state() const {

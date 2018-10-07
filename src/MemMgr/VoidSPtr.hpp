@@ -273,7 +273,7 @@ public:
 //    return *this;
 //  }
   
-  void reset() BOOST_NOEXCEPT {
+  virtual void reset() BOOST_NOEXCEPT {
     this_type().swap(*this);
   }
   
@@ -359,8 +359,9 @@ public:
     return (m_struBlock.m_px);
   }
 
-private:
+protected:
   friend class VoidWPtr;
+  template<class Y> friend class WeakPtr;
 
 protected:
   template<class T>
@@ -478,14 +479,23 @@ std::ostream &operator<<(std::ostream &os, VoidSPtr const &p) {
   return os;
 }
 
-VoidSPtr VoidWPtr::lock() const BOOST_NOEXCEPT {
+////////////////////////////////////////////////
+//                  VoidWPtr
+////////////////////////////////////////////////
+
+VoidSPtr VoidWPtr::lock_raw() const BOOST_NOEXCEPT {
   return VoidSPtr(*this, boost::detail::sp_nothrow_tag());
 }
 
 VoidWPtr::VoidWPtr(VoidSPtr const &r) BOOST_NOEXCEPT
   : m_struBlock(r.m_struBlock),
     m_pn(r.m_pn) {
-  
+}
+
+VoidWPtr & VoidWPtr::operator=(VoidSPtr const &r) BOOST_NOEXCEPT {
+  m_struBlock = r.m_struBlock;
+  m_pn = r.m_pn;
+  return *this;
 }
 
 //#pragma pack (pop)
