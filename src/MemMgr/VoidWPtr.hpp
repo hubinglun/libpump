@@ -18,7 +18,7 @@ namespace MemMgr {
 class VoidSPtr;
 
 class VoidWPtr {
-private:
+protected:
   
   // Borland 5.5.1 specific workarounds
   typedef VoidWPtr this_type;
@@ -46,6 +46,8 @@ public:
     m_pn = r.m_pn;
     return *this;
   }
+  
+  VoidWPtr &operator=(VoidSPtr const &r) BOOST_NOEXCEPT;
 
 #endif
 
@@ -131,7 +133,7 @@ public:
 //    boost::detail::sp_assert_convertible< Y, T >();
 //  }
   
-  VoidSPtr lock() const BOOST_NOEXCEPT;
+  VoidSPtr lock_raw() const BOOST_NOEXCEPT;
 //  {
 //    return VoidSPtr(*this,boost::detail::sp_nothrow_tag());
 //  }
@@ -174,7 +176,7 @@ public:
 
 #ifndef BOOST_NO_MEMBER_TEMPLATE_FRIENDS
 
-private:
+protected:
   
   friend class VoidSPtr;
 
