@@ -21,8 +21,8 @@
 
 #include <boost/noncopyable.hpp>
 
-#include "../../pumpdef.h"
-#include "../../Buffer/Buffer.h"
+#include "pumpdef.h"
+#include "ptl/Buffer/Buffer.h"
 #include "FdServiceDef.h"
 
 namespace nsp_boost = ::boost;

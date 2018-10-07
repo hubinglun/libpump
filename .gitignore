@@ -1,4 +1,2 @@
-
-/.idea/*
-/.idea/codeStyles/
-/cmake-build-debug/*
+/.idea/
+/cmake-build-debug/

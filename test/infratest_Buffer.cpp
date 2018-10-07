@@ -23,7 +23,7 @@
  * 在使用Buffer模块的代码中包含任何一个libpump中包含了boost头文件的头文件, 如Event.h
  */
 #include "Event/Event.h"
-#include "Buffer/Buffer.h"
+#include "ptl/Buffer/Buffer.h"
 
 using namespace std;
 using namespace Pump;
