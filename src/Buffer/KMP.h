@@ -22,7 +22,7 @@
 
 namespace nsp_std = std;
 
-namespace PUMP {
+namespace Pump {
 
 class KMP {
 public:

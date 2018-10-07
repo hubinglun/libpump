@@ -13,7 +13,7 @@
 #include "infratest_CbMailbox.h"
 
 using namespace google;
-using namespace PUMP;
+using namespace Pump;
 
 void initMailbox(PtrCbMailbox pMailbox) {
 //	CbQueueMailbox cbMB;
@@ -54,12 +54,17 @@ void initMailbox(PtrCbMailbox pMailbox) {
 }
 
 int main() {
-  // 构造一个 CbMailbox 的托管对象
-  PtrCbMailbox pMailbox = nsp_boost::make_shared<CbQueueMailbox>();
-  initMailbox(pMailbox);
-  // 构造一个 ICbMailboxEvoker 的托管对象
-  PtrICbMailboxEvoker pEvoker = nsp_boost::make_shared<ICbMailboxEvoker>(pMailbox);
-  IPump t_pump(pEvoker);
-  nsp_std::cout << t_pump.test_MbEvoker_runAll() << nsp_std::endl;
+//  // 构造一个 CbMailbox 的托管对象
+//  PtrCbMailbox pMailbox = nsp_boost::make_shared<CbQueueMailbox>();
+//  initMailbox(pMailbox);
+//  // 构造一个 ICbMailboxEvoker 的托管对象
+//  PtrICbMailboxEvoker pEvoker = nsp_boost::make_shared<ICbMailboxEvoker>(pMailbox);
+  PtrArg pIn,pOut;
+  
+  PWitness aWit(pIn,pOut);
+  aWit.init();
+  aWit.start();
+  aWit.join();
+//  while (1);
   return 0;
 }

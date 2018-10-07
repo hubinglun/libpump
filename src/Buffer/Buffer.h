@@ -29,7 +29,7 @@
 namespace nsp_std = std;
 namespace nsp_boost = boost;
 
-namespace PUMP {
+namespace Pump {
 
 /**
  * @class Buffer
@@ -171,9 +171,9 @@ Buffer<_Elem, _Alloc>::~Buffer() {
 template<class _Elem,
   class _Alloc>
 long Buffer<_Elem, _Alloc>::append(const char *szSrc, size_t iSLen) {
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   assert(m_iBegin <= m_iChunkSize);
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
   const char *szWork = szSrc;
   long iRestLen = static_cast<long>(iSLen);
   double tDiff1 = 0;
@@ -220,9 +220,9 @@ long Buffer<_Elem, _Alloc>::append(const char *szSrc, size_t iSLen) {
   LOG(INFO) << "new op cost: " << tDiff1;
 #endif // _TEST_LEVEL_DEBUG
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   assert(m_iBegin <= m_iChunkSize);
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
   
   return m_aiBufSize;
 }
@@ -241,9 +241,9 @@ long Buffer<_Elem, _Alloc>::find(const char *szSrc, size_t iSLen) {
 template<class _Elem,
   class _Alloc>
 long Buffer<_Elem, _Alloc>::erase(size_t iLen) {
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   assert(m_iBegin <= m_iChunkSize);
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
   long iRestDelLen = static_cast<long>(iLen);
   
   size_t iBufSize = size();
@@ -274,9 +274,9 @@ long Buffer<_Elem, _Alloc>::erase(size_t iLen) {
     }
   }
   unlockErase();
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   assert(m_iBegin <= m_iChunkSize);
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
   return 1;
 }
 

@@ -11,13 +11,13 @@
 
 namespace nsp_boost = ::boost;
 
-namespace PUMP {
+namespace Pump {
 
 /**
  * @class EventContainer
  * @brief Event 事件容器
  *
- * Watcher 对象中存放注册 Event 事件的容器
+ * PWatcher 对象中存放注册 Event 事件的容器
  *
  * FIXME 事件容器设计的不太好, 比如增删改接口太过简单
  */

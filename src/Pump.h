@@ -22,22 +22,26 @@
 #include "pumpdef.h"
 #include "Logger.h"
 #include "CbMailbox.h"
-#include "Watcher/Watcher.h"
-#include "Watcher/WatcherContainer.h"
+#include "PumpContainer.h"
+#include "Thread.h"
 
 namespace nsp_std = ::std;
 namespace nsp_boost = ::boost;
 
 /**
- * @namespace namespace PUMP
+ * @namespace namespace Pump
  * @brief libpump 的顶级命名空间
  */
-namespace PUMP {
+namespace Pump {
+
+class Pump;
+
+typedef nsp_boost::shared_ptr<Pump> PtrPump;
 
 /**
  * @class Pump [Pump.cpp]
  * @brief Pump 对象名字源于强健有力的“泵”, 正如“泵”的将机械能或其他外部能量传送给液体那样,
- * Pump 对象是整个事件循环框架的动力源泉, 它负责驱动 Watcher 对象监听、激活、处理
+ * Pump 对象是整个事件循环框架的动力源泉, 它负责驱动 PWatcher 对象监听、激活、处理
  * 事件对象
  */
 PUMP_ABSTRACT
@@ -45,9 +49,13 @@ class Pump
   : virtual public nsp_boost::noncopyable {
   // FIXME 应该增加参数配置功能
 public:
-  Pump() {}
+  Pump();
+
+#ifdef _TEST_LEVEL_INFO
   
-  explicit Pump(PtrCbMailboxEvoker pMbEvoker);
+  Pump(PtrArg pIn, PtrArg pOut, PumpType emType);
+
+#endif //_TEST_LEVEL_INFO
   
   virtual ~Pump() {}
   
@@ -55,115 +63,148 @@ public:
    * @fn \a virtual void init() = 0
    * @brief 初始化Pump对象，实际上按照配置初始化WatcherList
    */
-  virtual void init() = 0;
+  virtual void init();
   
   /**
    * @fn \a virtual void start() = 0
    * @brief 启动 Pump 服务
    */
-  virtual void start() = 0;
+  virtual int start();
   
   /**
    * @fn \a virtual void pause() = 0
    * @brief 暂停Pump循环，挂起
    */
-  virtual void pause() = 0;
+  virtual int pause();
   
   /**
    * @fn \a virtual void stop() = 0
    * @brief 终结Pump循环，需要清理资源，释放fd等
    */
-  virtual void stop() = 0;
+  virtual int stop();
+  
+  void setArgIn(PtrArg pArgIn);
+  
+  PtrArg getArgOut();
 
 protected:
+  /**
+   * @fn virtual void routine() = 0
+   * @brief 当Pump对象需要作为一个独立线程的服务时, 这个函数作为线程的回调函数
+   *
+   */
+  virtual void routine() = 0;
+  
+  virtual int routine_core() = 0;
+
+protected:
+  //! < PWatcher 对象名
+  nsp_std::string m_strName;
   //! 标志 Pump 当前的运行状态
-  enum PumpState m_state;
+  enum PumpState m_emState;
+  const enum PumpType m_emType;
+  PtrThread m_pThread;
   /**
-   * @var WPtrCbMailboxEvoker m_wpMbEvoker
-   * @brief 回调函数邮箱函数执行执行接口对象
+   * @var PtrArg m_argIn
+   * @brief PWatcher 对象的输入参数
    *
-   * * CbMailboxEvoker 是接口类, 其指针对象必须由 Pump 类的派生类 \
-   * 指向一个 CbMailboxEvoker 的实现类
+   * 指针对象, 因此可以是任何类型的数据, 由 PWatcher 对象的实现派生解释
    */
-  PtrCbMailboxEvoker m_pMbEvoker;
+  PtrArg m_pArgIn;
   /**
-   * @var PtrWatcherContainer m_pWatchers
-   * @brief 存放 Watcher 对象指针的数组对象
+   * @var PtrArg m_argOut
+   * @brief PWatcher 对象的输出
    *
-   * * WatcherContainer 是存放 Watcher 对象的容器, 其指针对象必须由 Pump 类的派生类 \
-   * 指向一个 WatcherContainer 的实现类
+   * 指针对象, 因此可以是任何类型的数据, 由 PWatcher 对象的实现派生解释
    */
-  PtrWatcherContainer m_pWatchers;
+  PtrArg m_pArgOut;
+};
+
+class AsyncPump
+  : public Pump {
+
+public:
+  AsyncPump();
+  
+#ifdef _TEST_LEVEL_INFO
+  
+  AsyncPump(PtrArg pIn, PtrArg pOut);
+
+#endif //_TEST_LEVEL_INFO
+  
+  virtual ~AsyncPump();
+
+protected:
+  virtual void routine() = 0;
+
+protected:
+  PtrThread m_pThread;
 };
 
 /**
- * @class IPump []
+ * @class PWitness []
  * @brief Pump 对象的实现类, 主要用于测试 Pump 对象的功能
  */
 PUMP_IMPLEMENT
-class IPump
-  : public Pump {
+class PWitness
+  : public AsyncPump {
 public:
-  typedef nsp_boost::shared_ptr<WatcherList> PtrRealWContainer;
+  PUMP_IMPLEMENT
+  class PWitnessThread
+    : public PThread {
+  public:
+    PWitnessThread() {}
+    ~PWitnessThread() {}
+  };
 public:
-  IPump();
   
-  explicit IPump(PtrCbMailboxEvoker pMbEvoker);
+  PWitness();
+
+#ifdef _TEST_LEVEL_INFO
   
-  ~IPump();
+  PWitness(PtrArg pIn, PtrArg pOut);
+
+#endif //_TEST_LEVEL_INFO
+  
+  ~PWitness();
   
   /** 初始化Pump对象，实际上按照配置初始化WatcherList */
   virtual void init();
   
   /** 启动 Pump 服务 */
-  virtual void start();
+  virtual int start();
   
   /** 暂停Pump循环，挂起 */
-  virtual void pause();
+  virtual int pause();
   
   /** 终结Pump循环，需要清理资源，释放fd等 */
-  virtual void stop();
+  virtual int stop();
 
-#ifdef _TEST_LEVEL_INFO
+public:
   
-  /**
-   * @fn void test_initWatcherList()
-   * @brief 手动初始化 WatcherList
-   */
-  void test_initWatcherList();
-
-#endif // _TEST_LEVEL_INFO
+  virtual void routine();
+  
+  virtual int routine_core();
+  
+  void join();
 
 private:
   /**
-   * @brief watching() 前置处理
+   * @brief process() 前置处理
    */
-  virtual size_t preWatching();
+  virtual int preWatch();
   
   /**
-   * @brief watching()
+   * @brief process()
    *
-   * 遍历 m_watchers 数组, 逐个调用 Watcher 对象的三个阶段函数
+   * 遍历 m_watchers 数组, 逐个调用 PWatcher 对象的三个阶段函数
    */
-  virtual size_t watching();
+  virtual int process();
   
   /**
-   * @brief watching()前置处理
+   * @brief process()前置处理
    */
-  virtual size_t postWatching();
-
-#ifdef _TEST_LEVEL_INFO
-public:
-  size_t test_MbEvoker_runAll() {
-    PtrICbMailboxEvoker t_pMailEvoker = nsp_boost::dynamic_pointer_cast<ICbMailboxEvoker>(m_pMbEvoker);
-    if (t_pMailEvoker == NULL) {
-      return 0;
-    }
-    return t_pMailEvoker->runAll();
-  }
-
-#endif // _TEST_LEVEL_INFO
-
+  virtual int postWatch();
 };
 
 }

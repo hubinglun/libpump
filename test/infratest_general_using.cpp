@@ -12,7 +12,7 @@
 
 using namespace std;
 using namespace boost;
-using namespace PUMP;
+using namespace Pump;
 
 class test_A{
 protected:
@@ -39,7 +39,7 @@ void swap(char* &p, char* &q)
 }
 
 void shared_prt_test(){
-	shared_ptr<test_A> pA;
+	boost::shared_ptr<test_A> pA;
 	if(pA == NULL) {
 		LOG(INFO)<<"pA == NULL";
 	}

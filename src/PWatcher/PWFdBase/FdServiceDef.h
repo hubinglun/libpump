@@ -17,9 +17,9 @@
 
 namespace nsp_boost = ::boost;
 
-namespace PUMP {
+namespace Pump {
 
-class IoWatcher;
+class PWIo;
 class FdBase;
 typedef nsp_boost::shared_ptr<FdBase> PtrFD;
 
@@ -31,7 +31,7 @@ PUMP_INTERFACE
 class FdService
   : public Service {
 public:
-  typedef int(*pFdCb)(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData);
+  typedef int(*pFdCb)(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData);
 
 public:
   FdService()
@@ -71,20 +71,20 @@ PUMP_INTERFACE
 class NetService
   : public Service {
 public:
-  typedef int(*pFdCb)(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData);
+  typedef int(*pFdCb)(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData);
 
 public:
   NetService() {}
   
   virtual ~NetService() {}
   
-  virtual int acceptCb(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid()) = 0;
+  virtual int acceptCb(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid()) = 0;
   
-  virtual int sendCb(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid()) = 0;
+  virtual int sendCb(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid()) = 0;
   
-  virtual int recvCb(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid()) = 0;
+  virtual int recvCb(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid()) = 0;
   
-  virtual int closeCb(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid()) = 0;
+  virtual int closeCb(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid()) = 0;
   
   /*FIXME 需要修改, 取消纯虚函数改用成员函数指针*/
   pFdCb m_pCbAccept;

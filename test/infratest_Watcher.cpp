@@ -4,10 +4,10 @@
 
 #include <boost/shared_ptr.hpp>
 #include "CbMailbox.h"
-#include "Watcher/FdBaseWatcher/IoWatcher.h"
+#include "PWatcher/PWFdBase/PWIo.h"
 #include "Logger.h"
 
-using namespace PUMP;
+using namespace Pump;
 
 /**
  * @class OnAccept
@@ -104,7 +104,7 @@ public:
 
 //  virtual int acceptCb(PtrFD pFdAccept) = 0;
   
-  virtual int recvCb(IoWatcher & rIoWatcher, PtrFD pFd, PtrVoid pData) {
+  virtual int recvCb(PWIo & rIoWatcher, PtrFD pFd, PtrVoid pData) {
     PfnOnRecv pRecv = nsp_boost::dynamic_pointer_cast<OnRecv>(m_pfnRecv);
     rIoWatcher.insert(EVPRIOR_DEFAULT, pRecv);
     nsp_std::string strMsg("Hello World!!!\n");
@@ -112,20 +112,20 @@ public:
     return 0;
   }
   
-  virtual int sendCb(IoWatcher & rIoWatcher, PtrFD pFd, PtrVoid pData) {
+  virtual int sendCb(PWIo & rIoWatcher, PtrFD pFd, PtrVoid pData) {
     PfnOnSend pSend = nsp_boost::dynamic_pointer_cast<OnSend>(m_pfnSend);
     rIoWatcher.insert(EVPRIOR_DEFAULT, pSend);
     return 0;
   }
   
-  virtual int acceptCb(IoWatcher & rIoWatcher, PtrFD pFd, PtrVoid pData) {
+  virtual int acceptCb(PWIo & rIoWatcher, PtrFD pFd, PtrVoid pData) {
     PfnOnAccept pFn = nsp_boost::dynamic_pointer_cast<OnAccept>(m_pfnAccept);
     pFn->m_arg1 = pFd->fd_;
     rIoWatcher.insert(EVPRIOR_DEFAULT, pFn);
     return 0;
   }
   
-  virtual int closeCb(IoWatcher & rIoWatcher, PtrFD pFd, PtrVoid pData) {
+  virtual int closeCb(PWIo & rIoWatcher, PtrFD pFd, PtrVoid pData) {
     PfnOnClose pFn = nsp_boost::dynamic_pointer_cast<OnClose>(m_pfnClose);
     rIoWatcher.insert(EVPRIOR_DEFAULT, pFn);
     return 0;
@@ -167,11 +167,11 @@ void test_IoWatcher(){
   
   PtrTcpService tcpTest = nsp_boost::make_shared<TcpTest>(pCbMBMgr);
   
-  IoWatcher watcher(pCbMBMgr);
+  PWIo watcher(PtrArg(),PtrArg(),pCbMBMgr);
   watcher.init();
   watcher.newAccept("127.0.0.1", 8001, tcpTest);
   while (1) {
-    watcher.doWatching();
+    watcher.routine_core();
     pMailbox->runAll();
   }
 }

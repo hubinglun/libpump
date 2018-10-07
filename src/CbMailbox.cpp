@@ -4,7 +4,7 @@
 
 #include "CbMailbox.h"
 
-namespace PUMP {
+namespace Pump {
 
 ////////////////////////////////////////////////
 //                 CbList

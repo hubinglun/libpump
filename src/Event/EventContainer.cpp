@@ -4,7 +4,7 @@
 
 #include "EventContainer.h"
 
-namespace PUMP {
+namespace Pump {
 
 ////////////////////////////////////////////////
 //                    EvList

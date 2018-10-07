@@ -7,22 +7,25 @@
  * @date 2018.09.09
  */
 
-#include "IoWatcher.h"
+#include "PWIo.h"
 
-namespace PUMP {
+namespace Pump {
 
 ////////////////////////////////////////////////
-//                   IoWatcher
+//                   PWIo
 ////////////////////////////////////////////////
 
-IoWatcher::IoWatcher() {}
+PWIo::PWIo() {}
 
-IoWatcher::IoWatcher(PtrCbMailboxMgr pMbMgr)
-  : FdBaseWatcher(pMbMgr) {}
+#ifdef _TEST_LEVEL_INFO
+PWIo::PWIo(PtrArg pIn, PtrArg pOut, PtrCbMailboxMgr pMbMgr)
+  : PWFdBase(pIn, pOut, pMbMgr) {}
+#endif //_TEST_LEVEL_INFO
 
-IoWatcher::~IoWatcher() {}
+PWIo::~PWIo() {}
 
-void IoWatcher::init() {
+void PWIo::init() {
+  Pump::init();
   m_pEvents = nsp_boost::make_shared<EvList>();
   m_pPostEvents = nsp_boost::make_shared<PrePostList>();
   // FIXME 前置及后置事件容器未初始化
@@ -31,13 +34,13 @@ void IoWatcher::init() {
   m_pBackend->init();
 }
 
-void IoWatcher::doWatching() {
-  preProcess();
-  dispatch();
-  postProcess();
+int PWIo::routine_core() {
+  preWatch();
+  watch();
+  postWatch();
 }
 
-int IoWatcher::newAccept(const char *szIp, ushort iPort,
+int PWIo::newAccept(const char *szIp, ushort iPort,
                          PtrTcpService pTcpService) {
   pump_fd_t fd;
   sockaddr_in servaddr;
@@ -84,14 +87,14 @@ int IoWatcher::newAccept(const char *szIp, ushort iPort,
     return -1;
   }
   
-  pSock->m_state = FD_STATE_LISTENED;
+  pSock->m_emState = FD_STATE_LISTENED;
   pSock->fd_ev_ = IO_EV_IN;
   m_pFds->insert(pSock);
   
   return 0;
 }
 
-int IoWatcher::enableAccept(pump_fd_t fd) {
+int PWIo::enableAccept(pump_fd_t fd) {
   PtrSock pSock = nsp_boost::dynamic_pointer_cast<Socket>(m_pFds->get(fd));
   if (pSock == NULL) {
     /* FIXME 设置错误码 */
@@ -99,7 +102,7 @@ int IoWatcher::enableAccept(pump_fd_t fd) {
     return -1;
   }
   
-  switch (pSock->m_state) {
+  switch (pSock->m_emState) {
     case FD_STATE_LISTENED: {
       /*已经在监听状态*/
       return 0;
@@ -116,7 +119,7 @@ int IoWatcher::enableAccept(pump_fd_t fd) {
         return -1;
       }
       /*跟新状态*/
-      pSock->m_state = FD_STATE_LISTENED;
+      pSock->m_emState = FD_STATE_LISTENED;
       pSock->fd_ev_ = IO_EV_IN;
       return 0;
     }
@@ -131,7 +134,7 @@ int IoWatcher::enableAccept(pump_fd_t fd) {
   }
 }
 
-int IoWatcher::disableAccept(pump_fd_t fd) {
+int PWIo::disableAccept(pump_fd_t fd) {
   PtrSock pSock = nsp_boost::dynamic_pointer_cast<Socket>(m_pFds->get(fd));
   if (pSock == NULL) {
     /* FIXME 设置错误码 */
@@ -139,7 +142,7 @@ int IoWatcher::disableAccept(pump_fd_t fd) {
     return -1;
   }
   
-  switch (pSock->m_state) {
+  switch (pSock->m_emState) {
     case FD_STATE_LISTENED: {
       /*从多路复用对象删除fd*/
       IoFdCtl change;
@@ -152,7 +155,7 @@ int IoWatcher::disableAccept(pump_fd_t fd) {
         return -1;
       }
       /*跟新状态*/
-      pSock->m_state = FD_STATE_INIT;
+      pSock->m_emState = FD_STATE_INIT;
       pSock->fd_ev_ = 0;
       return 0;
     }
@@ -170,7 +173,7 @@ int IoWatcher::disableAccept(pump_fd_t fd) {
   }
 }
 
-int IoWatcher::enableRecv(pump_fd_t fd) {
+int PWIo::enableRecv(pump_fd_t fd) {
   PtrSock pSock = nsp_boost::dynamic_pointer_cast<Socket>(m_pFds->get(fd));
   if (pSock == NULL) {
     /* FIXME 设置错误码 */
@@ -178,7 +181,7 @@ int IoWatcher::enableRecv(pump_fd_t fd) {
     return -1;
   }
   
-  switch (pSock->m_state) {
+  switch (pSock->m_emState) {
     case FD_STATE_CONNECTED: {
       IoFdCtl change;
       if (pSock->fd_ev_ == 0) {
@@ -221,7 +224,7 @@ int IoWatcher::enableRecv(pump_fd_t fd) {
   return 0;
 }
 
-int IoWatcher::disableRecv(pump_fd_t fd) {
+int PWIo::disableRecv(pump_fd_t fd) {
   PtrSock pSock = nsp_boost::dynamic_pointer_cast<Socket>(m_pFds->get(fd));
   if (pSock == NULL) {
     /* FIXME 设置错误码 */
@@ -229,7 +232,7 @@ int IoWatcher::disableRecv(pump_fd_t fd) {
     return -1;
   }
   
-  switch (pSock->m_state) {
+  switch (pSock->m_emState) {
     case FD_STATE_CONNECTED: {
       IoFdCtl change;
       if ((pSock->fd_ev_ & IO_EV_IN) != 0) {
@@ -262,7 +265,7 @@ int IoWatcher::disableRecv(pump_fd_t fd) {
   return 0;
 }
 
-int IoWatcher::enableSend(pump_fd_t fd) {
+int PWIo::enableSend(pump_fd_t fd) {
   PtrSock pSock = nsp_boost::dynamic_pointer_cast<Socket>(m_pFds->get(fd));
   if (pSock == NULL) {
     /* FIXME 设置错误码 */
@@ -270,7 +273,7 @@ int IoWatcher::enableSend(pump_fd_t fd) {
     return -1;
   }
   
-  switch (pSock->m_state) {
+  switch (pSock->m_emState) {
     case FD_STATE_CONNECTED: {
       IoFdCtl change;
       if (pSock->fd_ev_ == 0) {
@@ -313,7 +316,7 @@ int IoWatcher::enableSend(pump_fd_t fd) {
   return 0;
 }
 
-int IoWatcher::disableSend(pump_fd_t fd) {
+int PWIo::disableSend(pump_fd_t fd) {
   PtrSock pSock = nsp_boost::dynamic_pointer_cast<Socket>(m_pFds->get(fd));
   if (pSock == NULL) {
     /* FIXME 设置错误码 */
@@ -321,7 +324,7 @@ int IoWatcher::disableSend(pump_fd_t fd) {
     return -1;
   }
   
-  switch (pSock->m_state) {
+  switch (pSock->m_emState) {
     case FD_STATE_CONNECTED: {
       IoFdCtl change;
       if ((pSock->fd_ev_ & IO_EV_OUT) != 0) {
@@ -354,7 +357,7 @@ int IoWatcher::disableSend(pump_fd_t fd) {
   return 0;
 }
 
-int IoWatcher::PostSend(pump_fd_t fd, const nsp_std::string &strMsg) {
+int PWIo::PostSend(pump_fd_t fd, const nsp_std::string &strMsg) {
   PtrSock pSock = nsp_boost::dynamic_pointer_cast<Socket>(m_pFds->get(fd));
   if (pSock == NULL) {
     /* FIXME 设置错误码 */
@@ -365,7 +368,7 @@ int IoWatcher::PostSend(pump_fd_t fd, const nsp_std::string &strMsg) {
   // 启用发送事件
   this->enableSend(pSock->fd_);
   
-  if ((pSock->m_state != FD_STATE_CONNECTED)
+  if ((pSock->m_emState != FD_STATE_CONNECTED)
       || ((pSock->fd_ev_ & IO_EV_OUT) == 0)
       || (!pSock->m_pIobufSend)) {
     /* FIXME 设置错误码 */
@@ -377,7 +380,7 @@ int IoWatcher::PostSend(pump_fd_t fd, const nsp_std::string &strMsg) {
   return 0;
 }
 
-int IoWatcher::PostShutdown(pump_fd_t fd) {
+int PWIo::PostShutdown(pump_fd_t fd) {
   PtrSock pSock = nsp_boost::dynamic_pointer_cast<Socket>(m_pFds->get(fd));
   if (pSock == NULL) {
     /* FIXME 设置错误码 */
@@ -385,13 +388,13 @@ int IoWatcher::PostShutdown(pump_fd_t fd) {
     return -1;
   }
   
-  if (pSock->m_state == FD_STATE_CONNECTED) {
+  if (pSock->m_emState == FD_STATE_CONNECTED) {
     pSock->shutdown(SHUT_RD);
   }
   return 0;
 }
 
-int IoWatcher::PostClose(pump_fd_t fd) {
+int PWIo::PostClose(pump_fd_t fd) {
   PtrSock pSock = nsp_boost::dynamic_pointer_cast<Socket>(m_pFds->get(fd));
   if (pSock == NULL) {
     /* FIXME 设置错误码 */
@@ -399,7 +402,7 @@ int IoWatcher::PostClose(pump_fd_t fd) {
     return -1;
   }
   
-  if (pSock->m_state == FD_STATE_CONNECTED) {
+  if (pSock->m_emState == FD_STATE_CONNECTED) {
     if (pSock->close() == -1) {
       // FIXME 处理错误
     }
@@ -417,13 +420,13 @@ int IoWatcher::PostClose(pump_fd_t fd) {
   return 0;
 }
 
-int IoWatcher::preProcess() {
+int PWIo::preWatch() {
   // FIXME 运行前置事件列表
 //  m_pPreEvents->runAll();
   return 0;
 }
 
-int IoWatcher::dispatch() {
+int PWIo::watch() {
   IoFdRetList fdRetList;
 #ifdef _TEST_LEVEL_INFO
   // FIXME 超时时间目前给了一个固定的时间
@@ -456,7 +459,7 @@ int IoWatcher::dispatch() {
       
       if (((pIoFd->fd_ev_ & IO_EV_IN) != 0)
           && (((*it).re_fd_ev_ & IO_EV_IN) != 0)) {
-//        switch (pIoFd->m_state) {
+//        switch (pIoFd->m_emState) {
 //          case FD_STATE_LISTENED: {
 //            acceptHandle(pIoFd);
 //          }
@@ -478,7 +481,7 @@ int IoWatcher::dispatch() {
       }
       if (((pIoFd->fd_ev_ & IO_EV_OUT) != 0)
           && (((*it).re_fd_ev_ & IO_EV_OUT) != 0)) {
-//        switch (pIoFd->m_state) {
+//        switch (pIoFd->m_emState) {
 //          case FD_STATE_CONNECTED: {
 //            // FIXME 现在
 //            sendHandle(pIoFd);
@@ -510,13 +513,13 @@ int IoWatcher::dispatch() {
   return ret;
 }
 
-int IoWatcher::postProcess() {
+int PWIo::postWatch() {
   // FIXME 运行后置事件列表
 //  m_pPostEvents->runAll();
   return 0;
 }
 
-//int IoWatcher::acceptHandle(PtrIoFd pFdAccept) {
+//int PWIo::acceptHandle(PtrIoFd pFdAccept) {
 //  if (pFdAccept == NULL) {
 //#ifdef _TEST_LEVEL_INFO
 //    LOG(INFO) << "error: pFdAccept == NULL";
@@ -555,7 +558,7 @@ int IoWatcher::postProcess() {
 ////  nsp_std::string strOnSend("OnSend");
 ////  pFdConnector->m_pEvents->insert(strOnRecv, pFdAccept->m_pEvents->at(strOnRecv));
 ////  pFdConnector->m_pEvents->insert(strOnSend, pFdAccept->m_pEvents->at(strOnSend));
-//  pFdConnector->m_state = FD_STATE_CONNECTED;
+//  pFdConnector->m_emState = FD_STATE_CONNECTED;
 //  pFdConnector->fd_ev_ = IO_EV_NONE;
 //  // [20180907] 新加Tcp服务
 //  pFdConnector->m_pTcpService = pFdAccept->m_pTcpService;
@@ -570,7 +573,7 @@ int IoWatcher::postProcess() {
 //  return 0;
 //}
 //
-//int IoWatcher::recvHandle(PtrIoFd pFdRecv) {
+//int PWIo::recvHandle(PtrIoFd pFdRecv) {
 //  if (pFdRecv == NULL) {
 //#ifdef _TEST_LEVEL_INFO
 //    LOG(INFO) << "error: pFdRecv == NULL";
@@ -612,7 +615,7 @@ int IoWatcher::postProcess() {
 //  return 0;
 //}
 //
-//int IoWatcher::sendHandle(PtrIoFd pFdSend) {
+//int PWIo::sendHandle(PtrIoFd pFdSend) {
 //  if (pFdSend == NULL) {
 //#ifdef _TEST_LEVEL_INFO
 //    LOG(INFO) << "error: pFdSend == NULL";
@@ -696,13 +699,13 @@ TcpSockService::~TcpSockService() {
 
 }
 
-int TcpSockService::INHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData) {
+int TcpSockService::INHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData) {
   PtrSock pSock = nsp_boost::dynamic_pointer_cast<Socket>(pFd);
   if (pSock == NULL) {
     // FIXME 设置错误码
     return -1;
   }
-  switch (pFd->m_state) {
+  switch (pFd->m_emState) {
     case FD_STATE_LISTENED: {
       acceptHandle(rIoWatcher, pSock, pData);
     }
@@ -717,13 +720,13 @@ int TcpSockService::INHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData) {
   return 0;
 }
 
-int TcpSockService::OUTHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData) {
+int TcpSockService::OUTHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData) {
   PtrSock pSock = nsp_boost::dynamic_pointer_cast<Socket>(pFd);
   if (pSock == NULL) {
     // FIXME 设置错误码
     return -1;
   }
-  switch (pFd->m_state) {
+  switch (pFd->m_emState) {
     case FD_STATE_CONNECTED: {
       // FIXME 现在
       sendHandle(rIoWatcher, pSock, pData);
@@ -737,37 +740,37 @@ int TcpSockService::OUTHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData) {
 
 #ifdef _GNU_SOURCE
 
-int TcpSockService::RDHUPHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData) {
+int TcpSockService::RDHUPHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData) {
   return 0;
 }
 
 #endif // _GNU_SOURCE
 
-int TcpSockService::ERRHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData) {
+int TcpSockService::ERRHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData) {
   return 0;
 }
 
-int TcpSockService::HUPHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData) {
+int TcpSockService::HUPHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData) {
   return 0;
 }
 
-int TcpSockService::NVALHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData) {
+int TcpSockService::NVALHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData) {
   return 0;
 }
 
 #ifdef _XOPEN_SOURCE
 
-int TcpSockService::RDBANDHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData) {
+int TcpSockService::RDBANDHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData) {
   return 0;
 }
 
-int TcpSockService::WRBANDHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData) {
+int TcpSockService::WRBANDHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData) {
   return 0;
 }
 
 #endif //_XOPEN_SOURCE
 
-int TcpSockService::acceptHandle(IoWatcher &rIoWatcher, PtrSock pFd, PtrVoid pData) {
+int TcpSockService::acceptHandle(PWIo &rIoWatcher, PtrSock pFd, PtrVoid pData) {
   if (pFd == NULL) {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "error: pFdAccept == NULL";
@@ -806,7 +809,7 @@ ACCEPT:
 //  nsp_std::string strOnSend("OnSend");
 //  pFdConnector->m_pEvents->insert(strOnRecv, pFdAccept->m_pEvents->at(strOnRecv));
 //  pFdConnector->m_pEvents->insert(strOnSend, pFdAccept->m_pEvents->at(strOnSend));
-  pFdConnector->m_state = FD_STATE_CONNECTED;
+  pFdConnector->m_emState = FD_STATE_CONNECTED;
   pFdConnector->fd_ev_ = IO_EV_NONE;
   // [20180907] 新加Tcp服务
   pFdConnector->m_pTcpService = pFd->m_pTcpService;
@@ -821,7 +824,7 @@ ACCEPT:
   return 0;
 }
 
-int TcpSockService::readHandle(IoWatcher &rIoWatcher, PtrSock pFd, PtrVoid pData) {
+int TcpSockService::readHandle(PWIo &rIoWatcher, PtrSock pFd, PtrVoid pData) {
   if (pFd == NULL) {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "error: pFdRecv == NULL";
@@ -835,7 +838,7 @@ int TcpSockService::readHandle(IoWatcher &rIoWatcher, PtrSock pFd, PtrVoid pData
   ssize_t ret = ::read(pFd->fd_, buf, 1024);
   if (ret == 0) {
 #ifdef _TEST_LEVEL_INFO
-    LOG(INFO) << "warrning: 链接断开";
+    LOG(INFO) << "[warning] 链接断开";
 #endif // _TEST_LEVEL_INFO
     // FIXME [critical] 缺少链接断开处理
     rIoWatcher.PostClose(pFd->fd_);
@@ -862,7 +865,7 @@ int TcpSockService::readHandle(IoWatcher &rIoWatcher, PtrSock pFd, PtrVoid pData
   return 0;
 }
 
-int TcpSockService::sendHandle(IoWatcher &rIoWatcher, PtrSock pFd, PtrVoid pData) {
+int TcpSockService::sendHandle(PWIo &rIoWatcher, PtrSock pFd, PtrVoid pData) {
   if (pFd == NULL) {
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "error: pFdSend == NULL";

@@ -18,7 +18,7 @@
 
 namespace nsp_boost = ::boost;
 
-namespace PUMP {
+namespace Pump {
 
 #define PUMP_ABSTRACT  /** 修饰抽象类 */
 #define PUMP_INTERFACE  /** 修饰接口类 */
@@ -74,9 +74,9 @@ enum EventState {
  * @brief Event 基本类型
  *
  * 定义了事件对象 Event 基本类型
- * > EVTYPE_PRE 事前事件, 加入到 Watcher 的 PreEventsList 中在每一轮 preProcess() 中被执行
- * > EVTYPE_NORM 普通事件, 加入到 Watcher 的 NormEventsList 中在每一轮 dispatch() 中检测并激活
- * > EVTYPE_POST 事后事件, 加入到 Watcher 的 PostEventsList 中在每一轮 postProcess() 中被执行
+ * > EVTYPE_PRE 事前事件, 加入到 PWatcher 的 PreEventsList 中在每一轮 preWatch() 中被执行
+ * > EVTYPE_NORM 普通事件, 加入到 PWatcher 的 NormEventsList 中在每一轮 watch() 中检测并激活
+ * > EVTYPE_POST 事后事件, 加入到 PWatcher 的 PostEventsList 中在每一轮 postWatch() 中被执行
  */
 enum EventType {
   EVTYPE_PRE,   //! 前置事件
@@ -105,9 +105,15 @@ enum EventType {
 enum PumpState {
   PUMPSTATE_NEW,    //! 新建态
   PUMPSTATE_INIT,   //! 初始化态
-  PUMPSTATE_STOP,   //! 终止态
   PUMPSTATE_START,  //! 运行态
-  PUMPSTATE_PAUSE,  //! 挂起态
+  PUMPSTATE_PAUSE,  //! 暂停态
+  PUMPSTATE_WAITE,  //! 挂起态
+  PUMPSTATE_STOP,   //! 终止态
+};
+
+enum PumpType {
+  PUMPTYPE_SYNC,  //! 同步执行Pump
+  PUMPTYPE_ASYNC, //! 异步执行Pump
 };
 
 /**

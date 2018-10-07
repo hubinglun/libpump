@@ -26,13 +26,13 @@
 #include "Buffer/Buffer.h"
 
 using namespace std;
-using namespace PUMP;
+using namespace Pump;
 
 /** 测试用例<1> (通过)
  * KMP 算法测试
  */
 void test_KMP(){
-  PUMP::KMP kmp;
+  Pump::KMP kmp;
   char str[] = "bacbababadabababacbababadababacambabacbacbababadababacambabacbacbababadababacambabacbacbababadababacambabacbacbababadababacambabacbacbababadababacambabacbacbababadababacambabacbacbababadababacambabacbacbababadababacambabacbacbababadababacambabacbacbababadababacambabaccambabacaddababacasdsd\0";
   char ptr[] = "abacbac\0";
   clock_t start, end;

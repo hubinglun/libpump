@@ -19,12 +19,12 @@
 #include <arpa/inet.h>
 #endif // linux
 
-#include "FdBaseWatcher.h"
+#include "PWFdBase.h"
 #include "FdDef.h"
 
-namespace PUMP {
+namespace Pump {
 
-class IoWatcher;
+class PWIo;
 
 class Socket;
 
@@ -36,21 +36,24 @@ typedef nsp_boost::shared_ptr<Socket> PtrSock;
  * FIXME 仅用于测试,之后应该改为派生 FdBaseWatcher
  */
 PUMP_IMPLEMENT
-class IoWatcher
-  : public FdBaseWatcher {
+class PWIo
+  : public PWFdBase {
 public:
 #define IOBUF_LEN 128
   
-  IoWatcher();
+  PWIo();
+
+#ifdef _TEST_LEVEL_INFO
+  PWIo(PtrArg pIn, PtrArg pOut, PtrCbMailboxMgr pMbMgr);
+#endif //_TEST_LEVEL_INFO
   
-  explicit IoWatcher(PtrCbMailboxMgr pMbMgr);
-  
-  virtual ~IoWatcher();
+  virtual ~PWIo();
 
 public:
-  virtual void doWatching();
+  virtual void routine() {}
+  virtual int routine_core();
   
-  void init();
+  virtual void init();
   
   /**
    * @fn nt newAccept(const char *szIp, int iPort,
@@ -86,11 +89,11 @@ public:
 
 protected:
   
-  virtual int preProcess();
+  virtual int preWatch();
   
-  virtual int dispatch();
+  virtual int watch();
   
-  virtual int postProcess();
+  virtual int postWatch();
   
   /* FIXME [FIXED] 以下几个函数为IO事件的一级服务句柄. 用于测试临时放在此处, 后期考虑 \
    * 写到单独的网络层服务对象中 */
@@ -113,35 +116,35 @@ public:
   
   ~TcpSockService();
   
-  static int INHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
+  static int INHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
   
-  static int OUTHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
+  static int OUTHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
 
 #ifdef _GNU_SOURCE
   
-  static int RDHUPHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
+  static int RDHUPHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
 
 #endif // _GNU_SOURCE
   
-  static int ERRHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
+  static int ERRHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
   
-  static int HUPHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
+  static int HUPHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
   
-  static int NVALHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
+  static int NVALHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
 
 #ifdef _XOPEN_SOURCE
   
-  static int RDBANDHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
+  static int RDBANDHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
   
-  static int WRBANDHandle(IoWatcher &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
+  static int WRBANDHandle(PWIo &rIoWatcher, PtrFD pFd, PtrVoid pData = PtrVoid());
 
 #endif //_XOPEN_SOURCE
 private:
-  static int acceptHandle(IoWatcher &rIoWatcher, PtrSock pFd, PtrVoid pData = PtrVoid());
+  static int acceptHandle(PWIo &rIoWatcher, PtrSock pFd, PtrVoid pData = PtrVoid());
   
-  static int readHandle(IoWatcher &rIoWatcher, PtrSock pFd, PtrVoid pData = PtrVoid());
+  static int readHandle(PWIo &rIoWatcher, PtrSock pFd, PtrVoid pData = PtrVoid());
   
-  static int sendHandle(IoWatcher &rIoWatcher, PtrSock pFd, PtrVoid pData = PtrVoid());
+  static int sendHandle(PWIo &rIoWatcher, PtrSock pFd, PtrVoid pData = PtrVoid());
 };
 
 class Socket
