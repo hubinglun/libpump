@@ -17,6 +17,10 @@ namespace MemMgr {
 
 class VoidSPtr;
 
+bool operator==(VoidSPtr const &a, VoidSPtr const &b) BOOST_NOEXCEPT;
+
+bool operator!=(VoidSPtr const &a, VoidSPtr const &b) BOOST_NOEXCEPT;
+
 class VoidWPtr {
 protected:
   

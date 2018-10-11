@@ -17,7 +17,19 @@ enum SpState {
   SP_STATE_INIT,   //! 已构造
 };
 
+/**
+ * @def XXX占位符
+ */
 #define XXX nullptr
+
+/**
+ * FIXME 迫切需要工厂函数
+ * @def New(type,name,...)
+ * @brief 为对象申请空间, 并构造
+ */
+#define New(type,name,...) \
+SharedPtr< type > name(XXX); \
+name.construct(__VA_ARGS__);
 
 template<class T>
 class SharedPtr
@@ -126,6 +138,11 @@ public:
   }
   
   element_type *operator->() const {
+    if(m_state != SP_STATE_INIT) {
+      // FIXME 设置错误码
+      LOG(ERROR) << "Object not constructed.";
+      throw 0;
+    }
     return (VoidSPtr::get<element_type>());
   }
   
@@ -133,6 +150,20 @@ public:
     this->destroy();
     VoidSPtr::reset();
     m_state = SP_STATE_NULL;
+  }
+  
+  /**
+   * @fn ref() [试用阶段]
+   * @return element_type
+   * @brief 返回
+   */
+  element_type & ref() {
+    if(m_state != SP_STATE_INIT) {
+      // FIXME 设置错误码
+      LOG(ERROR) << "Object not constructed.";
+      throw 0;
+    }
+    return *VoidSPtr::rget<element_type>();
   }
   
   enum SpState state() const {

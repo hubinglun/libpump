@@ -383,7 +383,8 @@ public:
 
 protected:
   /**
-   * @var m_pParent
+   * FIXME 研究使用VoidWPtr替换 ???
+   * @var m_pParent [试用阶段]
    * @brief 父指针对象, 父指针托管的内存成员中包含本指针托管的内存
    */
   VoidSPtr *const m_pParent;
@@ -496,6 +497,18 @@ VoidWPtr & VoidWPtr::operator=(VoidSPtr const &r) BOOST_NOEXCEPT {
   m_struBlock = r.m_struBlock;
   m_pn = r.m_pn;
   return *this;
+}
+
+bool operator==(VoidWPtr const &a, VoidWPtr const &b) BOOST_NOEXCEPT {
+  VoidSPtr sp_a = a.lock_raw();
+  VoidSPtr sp_b = b.lock_raw();
+  return (sp_a == sp_b);
+}
+
+bool operator!=(VoidWPtr const &a, VoidWPtr const &b) BOOST_NOEXCEPT {
+  VoidSPtr sp_a = a.lock_raw();
+  VoidSPtr sp_b = b.lock_raw();
+  return (sp_a != sp_b);
 }
 
 //#pragma pack (pop)
