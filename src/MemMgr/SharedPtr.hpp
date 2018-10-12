@@ -147,6 +147,9 @@ public:
   }
   
   virtual void reset() BOOST_NOEXCEPT {
+    if (*this == nullptr) {
+      return;
+    }
     this->destroy();
     VoidSPtr::reset();
     m_state = SP_STATE_NULL;
