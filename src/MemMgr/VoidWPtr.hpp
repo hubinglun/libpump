@@ -16,10 +16,19 @@ namespace Pump {
 namespace MemMgr {
 
 class VoidSPtr;
+class VoidWPtr;
 
-bool operator==(VoidSPtr const &a, VoidSPtr const &b) BOOST_NOEXCEPT;
+bool operator==(VoidWPtr const &a, VoidWPtr const &b) BOOST_NOEXCEPT;
 
-bool operator!=(VoidSPtr const &a, VoidSPtr const &b) BOOST_NOEXCEPT;
+bool operator!=(VoidWPtr const &a, VoidWPtr const &b) BOOST_NOEXCEPT;
+
+bool operator==(VoidWPtr const &a, nullptr_t) BOOST_NOEXCEPT;
+
+bool operator!=(VoidWPtr const &a, nullptr_t) BOOST_NOEXCEPT;
+
+bool operator==(nullptr_t, VoidWPtr const &a) BOOST_NOEXCEPT;
+
+bool operator!=(nullptr_t, VoidWPtr const &a) BOOST_NOEXCEPT;
 
 class VoidWPtr {
 protected:

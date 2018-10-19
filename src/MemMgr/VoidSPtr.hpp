@@ -364,6 +364,7 @@ protected:
   template<class Y> friend class WeakPtr;
 
 protected:
+//public:
   template<class T>
   T *rget() {
 //    if (sizeof(T) > this->m_struBlock.m_iCapacity) {
@@ -509,6 +510,26 @@ bool operator!=(VoidWPtr const &a, VoidWPtr const &b) BOOST_NOEXCEPT {
   VoidSPtr sp_a = a.lock_raw();
   VoidSPtr sp_b = b.lock_raw();
   return (sp_a != sp_b);
+}
+
+bool operator==(VoidWPtr const &a, nullptr_t) BOOST_NOEXCEPT {
+  VoidSPtr sp_a = a.lock_raw();
+  return (sp_a == nullptr);
+}
+
+bool operator!=(VoidWPtr const &a, nullptr_t) BOOST_NOEXCEPT {
+  VoidSPtr sp_a = a.lock_raw();
+  return (sp_a != nullptr);
+}
+
+bool operator==(nullptr_t, VoidWPtr const &a) BOOST_NOEXCEPT {
+  VoidSPtr sp_a = a.lock_raw();
+  return (sp_a == nullptr);
+}
+
+bool operator!=(nullptr_t, VoidWPtr const &a) BOOST_NOEXCEPT {
+  VoidSPtr sp_a = a.lock_raw();
+  return (sp_a != nullptr);
 }
 
 //#pragma pack (pop)
