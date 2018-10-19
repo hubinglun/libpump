@@ -97,10 +97,20 @@ public:
   }
   
   virtual ~SharedPtr() {
-    if (*this != nullptr
-        && m_state == SP_STATE_INIT) {
-      destroy();
-    }
+    // FIXME [fixed] 不应该默认调用对象的析构函数，将析构函数放到SharedCount中调用，解决线程同步问题
+    /**
+     * @bug [fixed] 多线程下，如何保证 this->use_count() 到 this->destroy() 调用期间 \
+     *      没有其他线程构造了一个SharedPtr，若是此期间其他线程构造了一个SharedPtr则导致不一致
+     * @brief 对象的析构函数只有在成功调用构造函数以后才会在对象销毁前调用，因此为了满足线程安全必须将 \
+     *        析构函数调用放在内存销毁前一刻，以避免对象销毁到一半，又被其他线程引用造成不一致的现象。 \
+     *        因此在构造函数调用成功后注册私有析构函数，而在手动析构后注销私有析构，避免多次析构。
+     */
+    // 只有当需要释放资源时才调用析构函数
+//    if (*this != nullptr
+//        && m_state == SP_STATE_INIT) {
+//      this->destroy();
+//    }
+
 #ifdef _TEST_LEVEL_INFO
     LOG(INFO) << "~SharedPtr()";
 #endif //_TEST_LEVEL_INFO
@@ -113,12 +123,20 @@ public:
     return *this;
   }
   
+  SharedPtr &operator=(SharedPtr const &r) {
+    VoidSPtr::operator=(static_cast<VoidSPtr const &>(r));
+    m_state = r.state();
+    return *this;
+  }
+  
   template<class... Args>
-  SharedPtr &construct(Args &&...args) {
+  void construct(Args &&...args) {
     if (*this != nullptr
         && m_state == SP_STATE_NEW) {
       ::new(this->rget<element_type>())element_type(nsp_std::forward<Args>(args)...);
       m_state = SP_STATE_INIT;
+      // 构造成功则注册私有析构函数
+      m_pn.fn_destroy() = nsp_boost::bind(&SharedPtr::destroy_private, _1);
     }
   }
   
@@ -126,9 +144,32 @@ public:
     if (typeid(element_type) != typeid(void)) {
       this->rget<element_type>()->~element_type();
       m_state = SP_STATE_NEW;
+      // 手动析构后，注销私有析构函数，避免二次析构
+      m_pn.fn_destroy().clear();
+#ifdef _TEST_LEVEL_INFO
+      LOG(INFO) << "destroy";
+#endif //_TEST_LEVEL_INFO
     }
   }
-  
+
+protected:
+  /**
+   * @fn destroy_private
+   * @param pself 托管内存指针
+   * @return void.
+   * @brief 为了实现释放托管内存
+   */
+  static void destroy_private(void * pself) {
+    element_type * self = (element_type *)pself;
+    if (typeid(element_type) != typeid(void)) {
+      self->~element_type();
+#ifdef _TEST_LEVEL_INFO
+      LOG(INFO) << "destroy_private";
+#endif //_TEST_LEVEL_INFO
+    }
+  }
+
+public:
   const element_type &operator*() const {
     return *(VoidSPtr::get<element_type>());
   }
@@ -150,7 +191,7 @@ public:
     if (*this == nullptr) {
       return;
     }
-    this->destroy();
+//    this->destroy();
     VoidSPtr::reset();
     m_state = SP_STATE_NULL;
   }

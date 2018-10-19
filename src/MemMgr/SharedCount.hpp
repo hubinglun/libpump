@@ -20,7 +20,7 @@ class WeakCount;
 class SharedCount {
 private:
   
-  nsp_boost::detail::sp_counted_base *pi_;
+  SPCountBase *pi_;
   
   AdjacencyNode *pAdj_;
   
@@ -87,7 +87,8 @@ public:
   ~SharedCount() // nothrow
   {
     if (pi_ != 0) pi_->release();
-    if (pAdj_ != 0 && pi_->use_count() == 0) pAdj_->release();
+    // FIXME [urgent] 目前邻接点存在bug，会导致崩溃，暂时不知道原因。先屏蔽下代码
+//    if (pAdj_ != 0 && pi_ != 0 && pi_->use_count() == 0) pAdj_->release();
   }
   
   SharedCount(SharedCount const &r) : pi_(r.pi_), pAdj_(r.pAdj_) // nothrow
@@ -106,7 +107,7 @@ public:
   
   SharedCount &operator=(SharedCount const &r) // nothrow
   {
-    nsp_boost::detail::sp_counted_base *tmp = r.pi_;
+    SPCountBase *tmp = r.pi_;
     bool bDel = false;
     if (tmp != pi_) {
       if (tmp != 0) tmp->add_ref_copy();
@@ -139,7 +140,7 @@ public:
   
   void swap(SharedCount &r) // nothrow
   {
-    nsp_boost::detail::sp_counted_base *tmp = r.pi_;
+    SPCountBase *tmp = r.pi_;
     r.pi_ = pi_;
     pi_ = tmp;
     
@@ -168,7 +169,7 @@ public:
   }
   
   friend inline bool operator<(SharedCount const &a, SharedCount const &b) {
-    return std::less<nsp_boost::detail::sp_counted_base *>()(a.pi_, b.pi_);
+    return std::less<SPCountBase *>()(a.pi_, b.pi_);
   }
 
 //  void * get_deleter( sp_typeinfo const & ti ) const
@@ -179,12 +180,15 @@ public:
   void *get_untyped_deleter() const {
     return pi_ ? pi_->get_untyped_deleter() : 0;
   }
+
+public:
+  SPCountBase::func_t & fn_destroy() { return pi_->fn_destroy; }
 };
 
 class WeakCount {
 private:
   
-  nsp_boost::detail::sp_counted_base *pi_;
+  SPCountBase *pi_;
   
   friend class SharedCount;
 
@@ -234,7 +238,7 @@ public:
   
   WeakCount &operator=(SharedCount const &r) // nothrow
   {
-    nsp_boost::detail::sp_counted_base *tmp = r.pi_;
+    SPCountBase *tmp = r.pi_;
     
     if (tmp != pi_) {
       if (tmp != 0) tmp->weak_add_ref();
@@ -247,7 +251,7 @@ public:
   
   WeakCount &operator=(WeakCount const &r) // nothrow
   {
-    nsp_boost::detail::sp_counted_base *tmp = r.pi_;
+    SPCountBase *tmp = r.pi_;
     
     if (tmp != pi_) {
       if (tmp != 0) tmp->weak_add_ref();
@@ -260,7 +264,7 @@ public:
   
   void swap(WeakCount &r) // nothrow
   {
-    nsp_boost::detail::sp_counted_base *tmp = r.pi_;
+    SPCountBase *tmp = r.pi_;
     r.pi_ = pi_;
     pi_ = tmp;
   }
@@ -280,7 +284,7 @@ public:
   }
   
   friend inline bool operator<(WeakCount const &a, WeakCount const &b) {
-    return std::less<nsp_boost::detail::sp_counted_base *>()(a.pi_, b.pi_);
+    return std::less<SPCountBase *>()(a.pi_, b.pi_);
   }
 };
 

@@ -2,6 +2,7 @@
 #define LIBPUMP_SPCOUNTEDIMPL_HPP
 
 #include <boost/smart_ptr/detail/sp_counted_base.hpp>
+#include <functional>
 
 #include "SmartPtr.h"
 
@@ -10,9 +11,16 @@ namespace nsp_boost = boost;
 namespace Pump {
 namespace MemMgr {
 
+class SPCountBase
+  : public nsp_boost::detail::sp_counted_base {
+public:
+  typedef nsp_boost::function<void(void*)> func_t;
+  func_t fn_destroy;
+};
+
 template<class A, class D>
 class SpCountedImpl_ad
-  : public nsp_boost::detail::sp_counted_base
+  : public SPCountBase
 {
 private:
   
@@ -42,6 +50,9 @@ public:
   
   virtual void dispose() // nothrow
   {
+    // 调用析构函数
+    if(!fn_destroy.empty())
+      fn_destroy(p_);
     // 调用删除器归还托管数据
     d_( p_ , iSize_, a_ );
   }
@@ -75,7 +86,7 @@ public:
 
 template<class A> 
 class SpCountedImpl_a
-  : public nsp_boost::detail::sp_counted_base
+  : public SPCountBase
 {
 private:
   
@@ -104,6 +115,10 @@ public:
   
   virtual void dispose() // nothrow
   {
+    // 调用析构函数
+    if(!fn_destroy.empty())
+      fn_destroy(p_);
+    // 回收托管内存
     typedef typename std::allocator_traits<A>::template rebind_alloc< this_type > A2;
     A2 a2(a_);
     a2.deallocate((typename A2::pointer)p_, iSize_);
