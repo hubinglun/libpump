@@ -26,11 +26,15 @@ nsp_std::list<nsp_boost::shared_ptr<void> > &getHeapList();
 class Void {
 };
 
+/**
+ * @enum RelativeType
+ * @brief 描述内存区域间关系
+ */
 enum RelativeType {
-  RELATIVE_INTERSECT,
-  RELATIVE_INCLUDE,
-  RELATIVE_NONE,
-  RELATIVE_EQUAL,
+  RELATIVE_INTERSECT, //! 相交，不包含
+  RELATIVE_INCLUDE,   //! 真包含，非重叠
+  RELATIVE_EXCLUDE,      //! 互斥
+  RELATIVE_EQUAL,     //! 重叠
 };
 
 typedef struct tagBlock {
@@ -99,9 +103,6 @@ typedef struct tagBlock {
   }
   
   enum RelativeType relative(tagBlock const &r) const {
-    if (m_px == nullptr || r.m_px == nullptr) {
-      return RELATIVE_NONE;
-    }
     if (m_px == r.m_px
         && (char *) m_px + m_iCapacity ==
            (char *) r.m_px + r.m_iCapacity) {
@@ -113,6 +114,9 @@ typedef struct tagBlock {
                    && (char *) m_px + m_iCapacity <=
                       (char *) r.m_px + r.m_iCapacity)) {
       return RELATIVE_INCLUDE;
+    } else if (((char *) m_px + m_iCapacity < r.m_px)
+               || ((char *) r.m_px + r.m_iCapacity > m_px)) {
+      return RELATIVE_EXCLUDE;
     } else {
       return RELATIVE_INTERSECT;
     }

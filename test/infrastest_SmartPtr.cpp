@@ -214,6 +214,8 @@ void test_SharedPtr_1() {
   // test 3
   LOG(INFO) << "**********test 3 <2>**********";
   SharedPtr<test_B> spB_2(alloc, myDel());
+  New(int, int_0, 10)
+  int_0.destroy();
 }
 
 void test_template() {
@@ -241,31 +243,38 @@ void test_VoidWPtr() {
 void test_WeakPtr() {
   std::allocator<char> alloc;
   // test 1
-  SharedPtr<int> spInt_0(alloc,XXX);
+  SharedPtr<int> spInt_0(alloc, XXX);
   spInt_0.construct(1);
   WeakPtr<int> wpInt(spInt_0);
   SharedPtr<int> spInt_1 = wpInt.lock();
-  LOG_IF(INFO, (spInt_1!= nullptr
+  LOG_IF(INFO, (spInt_1 != nullptr
                 && spInt_0.use_count() == spInt_1.use_count()
-                && *spInt_1.get<int>()==1)) << "[OK] test 1-1";
+                && *spInt_1.get<int>() == 1)) << "[OK] test 1-1";
   spInt_0.reset();
   spInt_0 = wpInt.lock();
-  LOG_IF(INFO, (spInt_0!= nullptr
+  LOG_IF(INFO, (spInt_0 != nullptr
                 && spInt_0.use_count() == spInt_1.use_count()
-                && *spInt_0.get<int>()==1)) << "[OK] test 1-2";
+                && *spInt_0.get<int>() == 1)) << "[OK] test 1-2";
   spInt_0.reset();
   spInt_1.reset();
   spInt_0 = wpInt.lock();
-  LOG_IF(INFO, (spInt_0 == nullptr&&spInt_0.state()==SP_STATE_NULL)) << "[OK] test 1-3";
+  LOG_IF(INFO, (spInt_0 == nullptr && spInt_0.state() == SP_STATE_NULL)) << "[OK] test 1-3";
+  
+  // test 2
+  SharedPtr<int> spInt_2;
+  WeakPtr<int> wpInt_2(spInt_2);
+  WeakPtr<int> wpInt_3;
+  LOG_IF(INFO, (wpInt_2 == nullptr)) << "[OK] test 2-1";
+  LOG_IF(INFO, (wpInt_2 == wpInt_3)) << "[OK] test 2-2";
 }
 
 int main(){
 //  test_SmartPrt_0();
 //  test_template();
-//  test_VoidSPtr_1();
-//  test_SharedPtr_1();
-//  test_VoidSPtr_2();
-//  test_VoidWPtr();
+  test_VoidSPtr_1();
+  test_SharedPtr_1();
+  test_VoidSPtr_2();
+  test_VoidWPtr();
   test_WeakPtr();
   
 //  boost::shared_ptr<int> spint = boost::make_shared<int>(1);
