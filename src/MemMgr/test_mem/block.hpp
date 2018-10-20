@@ -99,8 +99,8 @@ public:
     return (static_cast< T * >(p_));
   }
   
-  template <typename T>
-  T & ref() {
+  template<typename T>
+  T &ref() {
     return *(this->r_get<T>());
   }
   
@@ -136,7 +136,8 @@ public:
     }
   }
   
-  virtual bool allocate(size_t n, const void * hint = 0) = 0;
+  virtual bool allocate(size_t n, const void *hint = 0) = 0;
+  
   virtual void deallocate() = 0;
 };
 
@@ -144,7 +145,7 @@ public:
  * @class tagHeap
  * @brief 进程内堆内存描述快
  */
-template < typename _Ax = nsp_std::allocator< char >, unsigned char _Value = 0 >
+template<typename _Ax = nsp_std::allocator<char>, unsigned char _Value = 0>
 class Heap
   : public Block {
 public:
@@ -180,12 +181,16 @@ public:
   }
 };
 
+template<typename _Ax = nsp_std::allocator<char> >
+class SHeapPolicyGuider;
+
 /**
- * @class BlockMgr [基类]
- * @brief 不包含申请内存的操作，因为进程内堆和共享内存申请方式不同，交给派生类实现 \
+ * @class BlockGuider [基类]
+ * @brief 不包含申请Block内存的操作，因为进程内堆和共享内存申请方式不同，交给派生类实现 \
  *        提供操作原始指针的接口
+ *  \a注：对Block有构造权限
  */
-class BlockMgr {
+class BlockGuider {
 protected:
   /**
    * @var m_px
@@ -194,11 +199,21 @@ protected:
    */
   Block *m_px;
 public:
-  BlockMgr() : m_px(0) {}
+  friend class SHeapPolicyGuider<>;
   
-  BlockMgr(const BlockMgr &r) : m_px(r.m_px) {}
+  BlockGuider() : m_px(0) {}
   
-  virtual ~BlockMgr() {} // 不允许释放m_px，BlockMgr派生对象只拥有构造的权利
+  BlockGuider(const BlockGuider &r) : m_px(r.m_px) {}
+  
+  virtual ~BlockGuider() {} // 不允许释放m_px，BlockGuider派生对象只拥有构造的权利
+  
+  size_t capacity() const {
+    return (this->empty() ? 0 : m_px->block_segsz_);
+  }
+  
+  size_t size() const {
+    return (this->empty() ? 0 : m_px->block_usesz_);
+  }
   
   template<class T>
   T *r_get() {
@@ -232,58 +247,58 @@ public:
     return (m_px == 0);
   }
   
-  enum RelativeType relative(BlockMgr const &r) const {
+  enum RelativeType relative(BlockGuider const &r) const {
     return (this->empty() ? RELATIVE_DEFAULT : m_px->relative(r.m_px));
   }
   
-  BlockMgr &operator=(const BlockMgr &r) {
+  BlockGuider &operator=(const BlockGuider &r) {
     m_px = (r.m_px);
     return *this;
   }
   
-  void swap(BlockMgr &r) {
+  void swap(BlockGuider &r) {
     std::swap(m_px, r.m_px);
   }
 };
 
-template < typename _Ax = nsp_std::allocator< char > >
-class HeapMgr
-  : public BlockMgr {
+template<typename _Ax = nsp_std::allocator<char> >
+class HeapGuider
+  : public BlockGuider {
 public:
-  typedef Heap< _Ax > type_block;
-  typedef typename _Ax::template rebind< type_block >::other _Alty;
+  typedef Heap<_Ax> type_block;
+  typedef typename _Ax::template rebind<type_block>::other _Alty;
 protected:
+  _Ax ra_;
   _Alty a_;
 public:
-  HeapMgr() : BlockMgr() {}
+  HeapGuider() : BlockGuider() {}
   
-  HeapMgr(const HeapMgr &r) : BlockMgr(r), a_(r.a_) {}
+  HeapGuider(const HeapGuider &r) : BlockGuider(r), ra_(r.a_), a_(r.a_) {}
   
-  virtual ~HeapMgr() {}
+  virtual ~HeapGuider() {}
   
-  explicit HeapMgr(size_t n, _Ax a)
-    : BlockMgr(), a_(a)
-  {
+  explicit HeapGuider(size_t n, _Ax &a)
+    : BlockGuider(), ra_(a), a_(a) {
     if (n > 0) {
       try {
-        m_px = (type_block*)a_.allocate(1);
+        m_px = (type_block *) a_.allocate(1);
       }
       catch (nsp_std::bad_alloc e) {
         LOG(ERROR) << "Heap allocate() failed";
         m_px = 0;
       }
       if (m_px != 0) {
-        a_.construct((type_block*)m_px, a);
+        a_.construct((type_block *) m_px, a);
         m_px->allocate(n, m_px);
       }
     }
   }
   
-  explicit HeapMgr(size_t n) : BlockMgr(), a_() {
+  explicit HeapGuider(size_t n) : BlockGuider(), ra_(), a_() {
     if (n > 0) {
       try {
         // 1)为内存描述块分配内存
-        m_px = (Block*)a_.allocate(1);
+        m_px = (Block *) a_.allocate(1);
       }
       catch (nsp_std::bad_alloc e) {
         LOG(ERROR) << "Heap allocate() failed";
@@ -292,25 +307,29 @@ public:
       if (m_px != 0) {
         _Ax ta = _Ax(a_);
         // 2)构造内存描述块 Heap< _Ax >
-        a_.construct(static_cast<type_block*>(m_px), ta);
+        a_.construct(static_cast<type_block *>(m_px), ta);
         // 3)分配原始内存
-        static_cast<type_block*>(m_px)->allocate(n, (void*)m_px);
+        static_cast<type_block *>(m_px)->allocate(n, (void *) m_px);
       }
     }
   }
   
-  HeapMgr &operator=(const HeapMgr &r) {
-    BlockMgr::operator=(r);
+  HeapGuider &operator=(const HeapGuider &r) {
+    BlockGuider::operator=(r);
     a_ = (r.a_);
     return *this;
   }
   
-  void swap(HeapMgr &r) {
-    BlockMgr::swap(r);
+  void swap(HeapGuider &r) {
+    BlockGuider::swap(r);
     std::swap(a_, r.a_);
   }
   
+  _Ax &get_alloc() {
+    return ra_;
+  }
   
+  type_block *get_block_priv() { return (type_block *) m_px; }
 };
 
 }
