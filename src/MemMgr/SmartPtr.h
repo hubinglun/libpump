@@ -33,8 +33,17 @@ class Void {
 enum RelativeType {
   RELATIVE_INTERSECT, //! 相交，不包含
   RELATIVE_INCLUDE,   //! 真包含，非重叠
-  RELATIVE_EXCLUDE,      //! 互斥
+  RELATIVE_EXCLUDE,   //! 互斥
   RELATIVE_EQUAL,     //! 重叠
+};
+
+/**
+ * @enum BlockState
+ * @brief 内存块状态
+ */
+enum BlockState {
+  BLOCK_STATE_NULL, //! 表示内存块对象指向空内存
+  BLOCK_STATE_NEW,  //! 表示内存块对象指向有效地址
 };
 
 typedef struct tagBlock {
@@ -45,8 +54,14 @@ typedef struct tagBlock {
   size_t m_iCapacity;
   /**
    * @var m_iSize
+   * @brief 暂时不确定用途
    */
   size_t m_iSize;
+  /**
+   * @var m_emState
+   * @brief 内存块状态
+   */
+  BlockState m_emState;
   /**
    * @var m_px
    * @brief 托管内存起始地址
@@ -56,24 +71,28 @@ typedef struct tagBlock {
   tagBlock()
     : m_iCapacity(0),
       m_iSize(0),
+      m_emState(BLOCK_STATE_NULL),
       m_px(0) {
   }
   
   tagBlock(const size_t iCapacity, const size_t iSize, void *px)
     : m_iCapacity(iCapacity),
       m_iSize(iSize),
+      m_emState(((px != 0 && iCapacity != 0) ? BLOCK_STATE_NULL : BLOCK_STATE_NEW)),
       m_px(px) {
   }
   
   tagBlock(const tagBlock &r)
     : m_iCapacity(r.m_iCapacity),
       m_iSize(r.m_iSize),
+      m_emState(r.m_emState),
       m_px(r.m_px) {
   }
   
-  tagBlock &operator==(const tagBlock &r) {
+  tagBlock &operator=(const tagBlock &r) {
     m_iCapacity = (r.m_iCapacity);
     m_iSize = (r.m_iSize);
+    m_emState = (r.m_emState);
     m_px = (r.m_px);
     return *this;
   }
@@ -81,6 +100,7 @@ typedef struct tagBlock {
   void swap(tagBlock &r) {
     std::swap(m_iCapacity, r.m_iCapacity);
     std::swap(m_iSize, r.m_iSize);
+    std::swap(m_emState, r.m_emState);
     std::swap(m_px, r.m_px);
   }
   

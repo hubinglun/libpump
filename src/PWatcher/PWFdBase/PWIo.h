@@ -43,9 +43,9 @@ public:
   
   PWIo();
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   PWIo(PtrArg pIn, PtrArg pOut, PtrCbMailboxMgr pMbMgr);
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
   
   virtual ~PWIo();
 

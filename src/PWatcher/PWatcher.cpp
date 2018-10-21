@@ -21,23 +21,23 @@ namespace Pump {
 //                   PWatcher
 ////////////////////////////////////////////////
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
 
 PWatcher::PWatcher(PtrArg pIn, PtrArg pOut)
   : AsyncPump(pIn, pOut) {}
 
-#endif // _TEST_LEVEL_INFO
+#endif // _TEST_LEVEL_DEBUG
 
 ////////////////////////////////////////////////
 //              PWCentralized
 ////////////////////////////////////////////////
-
+#ifdef _TEST_LEVEL_DEBUG
 PWCentralized::PWCentralized(PtrArg pIn,
                              PtrArg pOut,
                              PtrCbMailboxMgr pMbMgr)
   : PWatcher(pIn, pOut),
     m_pMbMgr(pMbMgr) {}
-
+#endif //_TEST_LEVEL_DEBUG
 bool PWCentralized::insert(ev_prior_t prior, PtrCbFn pfn) {
   return m_pMbMgr->insert(prior, pfn);
 }

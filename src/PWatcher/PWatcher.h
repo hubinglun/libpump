@@ -43,11 +43,11 @@ class PWatcher
 public:
   PWatcher() {}
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   
   PWatcher(PtrArg pIn, PtrArg pOut);
 
-#endif // _TEST_LEVEL_INFO
+#endif // _TEST_LEVEL_DEBUG
   
   virtual ~PWatcher() {}
 
@@ -92,11 +92,11 @@ class PWCentralized
 public:
   PWCentralized() {}
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   
   PWCentralized(PtrArg pIn, PtrArg pOut, PtrCbMailboxMgr pMbMgr);
 
-#endif // _TEST_LEVEL_INFO
+#endif // _TEST_LEVEL_DEBUG
   
   virtual ~PWCentralized() {}
   

@@ -9,10 +9,10 @@ namespace Pump {
 ////////////////////////////////////////////////
 //                   PWFdBase
 ////////////////////////////////////////////////
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
 PWFdBase::PWFdBase(PtrArg pIn, PtrArg pOut, PtrCbMailboxMgr pMbMgr)
 : PWCentralized(pIn,pOut,pMbMgr) {}
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
 
 ////////////////////////////////////////////////
 //                   FdHashTable

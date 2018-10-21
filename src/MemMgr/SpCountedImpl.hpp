@@ -2,7 +2,7 @@
 #define LIBPUMP_SPCOUNTEDIMPL_HPP
 
 #include <boost/smart_ptr/detail/sp_counted_base.hpp>
-#include <functional>
+#include <boost/function.hpp>
 
 #include "SmartPtr.h"
 

@@ -51,11 +51,11 @@ class Pump
 public:
   Pump();
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   
   Pump(PtrArg pIn, PtrArg pOut, PumpType emType);
 
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
   
   virtual ~Pump() {}
   
@@ -126,11 +126,11 @@ class AsyncPump
 public:
   AsyncPump();
   
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   
   AsyncPump(PtrArg pIn, PtrArg pOut);
 
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
   
   virtual ~AsyncPump();
 
@@ -160,11 +160,11 @@ public:
   
   PWitness();
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   
   PWitness(PtrArg pIn, PtrArg pOut);
 
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
   
   ~PWitness();
   

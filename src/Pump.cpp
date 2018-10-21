@@ -17,7 +17,7 @@ namespace Pump {
 Pump::Pump()
   : m_emState(PUMPSTATE_NEW), m_emType(PUMPTYPE_SYNC) {}
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
 
 Pump::Pump(PtrArg pIn, PtrArg pOut, PumpType emType)
   : m_emState(PUMPSTATE_NEW),
@@ -30,7 +30,7 @@ Pump::Pump(PtrArg pIn, PtrArg pOut, PumpType emType)
   
 }
 
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
 
 void Pump::init() {
   m_emState = PUMPSTATE_INIT;
@@ -65,12 +65,12 @@ PtrArg Pump::getArgOut() {
 
 AsyncPump::AsyncPump() { }
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
 AsyncPump::AsyncPump(PtrArg pIn, PtrArg pOut)
   : Pump(pIn, pOut, PUMPTYPE_ASYNC){
   
 }
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
 
 AsyncPump::~AsyncPump(){
 
@@ -82,14 +82,14 @@ AsyncPump::~AsyncPump(){
 
 PWitness::PWitness() {}
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
 
 PWitness::PWitness(PtrArg pIn, PtrArg pOut)
   : AsyncPump(pIn, pOut) {
   m_pThread = nsp_boost::make_shared<PWitnessThread>();
 }
 
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
 
 PWitness::~PWitness() {}
 

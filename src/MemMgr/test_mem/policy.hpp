@@ -183,6 +183,7 @@ public:
     typedef typename std::allocator_traits<_Ax>::template rebind_alloc<type_block> A2;
     A2 a2(a_);
     a2.deallocate((typename A2::pointer) this->m_px, 1);
+    this->m_px = 0;
   }
   
   // 销毁本对象
@@ -248,6 +249,7 @@ public:
     typedef typename std::allocator_traits<_Ax>::template rebind_alloc<type_block> A2;
     A2 a2(a_);
     a2.deallocate((typename A2::pointer) this->m_px, 1);
+    this->m_px = 0;
   }
   
   virtual void destroy() // nothrow

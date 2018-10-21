@@ -101,7 +101,7 @@ public:
    */
   virtual size_t init();
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   
   /**
    * @brief
@@ -111,7 +111,7 @@ public:
   template<class T>
   void test_createWatcher();
 
-#endif // _TEST_LEVEL_INFO
+#endif // _TEST_LEVEL_DEBUG
   
   /**
    * @fn virtual PtrWatcher begin()

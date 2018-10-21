@@ -17,10 +17,10 @@ namespace Pump {
 
 PWIo::PWIo() {}
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
 PWIo::PWIo(PtrArg pIn, PtrArg pOut, PtrCbMailboxMgr pMbMgr)
   : PWFdBase(pIn, pOut, pMbMgr) {}
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
 
 PWIo::~PWIo() {}
 
@@ -428,12 +428,12 @@ int PWIo::preWatch() {
 
 int PWIo::watch() {
   IoFdRetList fdRetList;
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   // FIXME 超时时间目前给了一个固定的时间
   timeval tmOut;
   tmOut.tv_sec = 3;
   tmOut.tv_usec = 0;
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
   int ret = m_pBackend->wait(fdRetList, tmOut);
   if (ret == -1) {
 #ifdef _TEST_LEVEL_INFO
@@ -855,11 +855,11 @@ int TcpSockService::readHandle(PWIo &rIoWatcher, PtrSock pFd, PtrVoid pData) {
     }
     pFd->m_pTcpService->recvCb(rIoWatcher, pFd, pData);
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
     // test code: 接收一条数据发送一条
 //    nsp_std::string strMsg("Hello World!!!");
 //    this->PostSend(pFdRecv->fd_, strMsg);
-#endif // _TEST_LEVEL_INFO
+#endif // _TEST_LEVEL_DEBUG
   }
   
   return 0;

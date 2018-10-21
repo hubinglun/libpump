@@ -31,7 +31,7 @@ class _Del {
 public:
   void operator()(Block *p) {
     if (p != 0) {
-      pre_del(p);
+//      pre_del(p);
       p->deallocate();
       post_del(data_);
     }
@@ -42,11 +42,11 @@ public:
   
   }
   
-  virtual void post_del(void *data) {
+  virtual void post_del(size_t data) {
   
   }
   
-  void *data_;
+  size_t data_;
 };
 
 class VoidSPtr;
