@@ -13,6 +13,7 @@
 #include "MemMgr/test_mem/block.hpp"
 #include "MemMgr/test_mem/policy.hpp"
 #include "MemMgr/test_mem/voidsptr.hpp"
+#include "MemMgr/test_mem/voidwptr.hpp"
 
 #include "Logger.h"
 
@@ -90,6 +91,21 @@ bool test_VoidSPtr_1() {
   VoidSPtr sp6(100000,XXX, d0);
   LOG_ASSERT((sp3.capacity()==100000)) << "[ failed ] 1-2";
   sp3.reset();
+  return true;
+}
+
+bool test_voidwptr(){
+  VoidSPtr sp_0(10);
+  VoidSPtr sp_1;
+  VoidWPtr wp_0;
+  
+  LOG_ASSERT((wp_0.expired())) << "[ failed ] 1-1";
+  wp_0 = sp_0;
+  LOG_ASSERT(!(wp_0.expired())) << "[ failed ] 1-2";
+  sp_1 = wp_0.lock_raw();
+  LOG_ASSERT(sp_1==sp_0) << "[ failed ] 1-3";
+  VoidWPtr wp_1(sp_1);
+  LOG_ASSERT(wp_1==wp_0) << "[ failed ] 1-4";
   return true;
 }
 
@@ -189,13 +205,13 @@ void smoke_test2() {
 /////////////////////////////////////
 
 int main() {
-//  LOG_IF(INFO, test_Block()) << "[ OK ] test_Block()";
+  LOG_IF(INFO, test_Block()) << "[ OK ] test_Block()";
+  LOG_IF(INFO, test_voidwptr()) << "[ OK ] test_voidwptr()";
 //  while(1) {
 //    LOG_IF(INFO, test_VoidSPtr_1()) << "[ OK ] test_VoidSPtr()";
 //  }
-  nm_test_VoidSPtr::smoke_test2();
+//  nm_test_VoidSPtr::smoke_test2();
 //  test_del * a = new test_del;
-//  a->del();
   return 0;
 }
 
