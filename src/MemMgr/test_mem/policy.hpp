@@ -38,7 +38,7 @@ public:
    */
   Block *m_px;
   
-  explicit Policy(Block *px) : m_px(px) {}
+  explicit Policy(Block const *px) : m_px(const_cast<Block*>(px)) {}
   
   virtual ~Policy() {}
   
@@ -284,6 +284,8 @@ protected:
 public:
   PolicyGuider() : m_pp(0) {}
   
+  PolicyGuider(Policy const * pp) : m_pp(const_cast<Policy*>(pp)) {}
+  
   PolicyGuider(const PolicyGuider &r) : m_pp(r.m_pp) {}
   
   virtual ~PolicyGuider() {}
@@ -303,6 +305,7 @@ public:
   
 };
 
+template <typename _Ax>
 class WHeapPolicyGuider;
 
 template<typename _Ax>
@@ -314,7 +317,7 @@ private:
   typedef typename _Ax::template rebind<char>::other _Alty;
 #define p_policy(var) static_cast<type_policy_base*>(var)
   
-  friend class WHeapPolicyGuider;
+  friend class WHeapPolicyGuider<_Ax>;
 
 protected:
   _Alty a_;
@@ -328,9 +331,6 @@ public:
     try {
       m_pp = (SHeapPolicyImpl_a<_Ax> *) a_.allocate(sizeof(SHeapPolicyImpl_a<_Ax>));
       a_.construct(m_pp, p, a);
-//      ::new(m_pp)SHeapPolicyImpl_a<_Ax>(p, iSize, alloc);
-      // FIXME [general] 应该改为使用分配器构造,但是SpCountedImpl_a基类sp_counted_base不允许, 需要改造
-//      m_pp = new SHeapPolicyImpl_a<_Ax>(p, iSize, alloc);
     }
     catch (...) {
       // 引用计数器构造失败, 则需要删除对象
@@ -445,14 +445,14 @@ public:
   {
     r.m_pp = 0;
   }
+  
+  explicit SHeapPolicyGuider(WHeapPolicyGuider<_Ax> const &r); // throws bad_weak_ptr when r.use_count() == 0
+  SHeapPolicyGuider(WHeapPolicyGuider<_Ax> const &r,
+                    nsp_boost::detail::sp_nothrow_tag); // constructs an empty *this when r.use_count() == 0
 
-//  explicit SHeapPolicyGuider(WHeapPolicyGuider const &r); // throws bad_weak_ptr when r.use_count() == 0
-//  SHeapPolicyGuider(WHeapPolicyGuider const &r,
-//              nsp_boost::detail::sp_nothrow_tag); // constructs an empty *this when r.use_count() == 0
-//
   SHeapPolicyGuider &operator=(SHeapPolicyGuider const &r) // nothrow
   {
-    SHeapPolicyGuider *tmp = r.m_pp;
+    type_policy_base *tmp = p_policy(r.m_pp);
     bool bDel = false;
     if (tmp != m_pp) {
       if (tmp != 0) tmp->add_ref_copy();
@@ -525,6 +525,114 @@ public:
 
 #undef p_policy
 };
+
+template<typename _Ax = nsp_std::allocator<char> >
+class WHeapPolicyGuider
+  : public PolicyGuider {
+private:
+  typedef SHeapPolicy<_Ax> type_policy_base;
+  typedef typename type_policy_base::type_block type_block;
+  typedef typename _Ax::template rebind<char>::other _Alty;
+#define p_policy(var) static_cast<type_policy_base*>(var)
+  
+  friend class SHeapPolicyGuider<_Ax>;
+
+public:
+  
+  WHeapPolicyGuider() : PolicyGuider() {}
+  
+  WHeapPolicyGuider(SHeapPolicy<_Ax> const &r)
+    : PolicyGuider(r.m_pp) // nothrow
+  {
+    if (m_pp != 0) p_policy(m_pp)->weak_add_ref();
+  }
+  
+  WHeapPolicyGuider(WHeapPolicyGuider const &r)
+    : PolicyGuider(r.m_pp) // nothrow
+  {
+    if (m_pp != 0) p_policy(m_pp)->weak_add_ref();
+  }
+  
+  WHeapPolicyGuider(SHeapPolicyGuider<_Ax> const &r)
+    : PolicyGuider(r.m_pp) // nothrow
+  {
+    if (m_pp != 0) p_policy(m_pp)->weak_add_ref();
+  }
+
+// Move support
+
+//#if !defined( BOOST_NO_CXX11_RVALUE_REFERENCES )
+//
+//  WHeapPolicyGuider(WHeapPolicyGuider &&r) : m_pp(r.m_pp) // nothrow
+//  {
+//    r.pi_ = 0;
+//  }
+//
+//#endif
+  
+  ~WHeapPolicyGuider() // nothrow
+  {
+    if (m_pp != 0) p_policy(m_pp)->weak_release();
+  }
+
+  WHeapPolicyGuider &operator=(WHeapPolicyGuider const &r) // nothrow
+  {
+    type_policy_base *tmp = p_policy(r.m_pp);
+    
+    if (tmp != m_pp) {
+      if (tmp != 0) p_policy(tmp)->weak_add_ref();
+      if (m_pp != 0) p_policy(m_pp)->weak_release();
+      m_pp = tmp;
+    }
+    
+    return *this;
+  }
+  
+  void swap(WHeapPolicyGuider &r) // nothrow
+  {
+    nsp_std::swap(r.m_pp, m_pp);
+  }
+  
+  long use_count() const // nothrow
+  {
+    return (m_pp != 0 ? p_policy(m_pp)->use_count() : 0);
+  }
+  
+  bool empty() const // nothrow
+  {
+    return (m_pp == 0);
+  }
+  
+  friend inline bool operator==(WHeapPolicyGuider const &a, WHeapPolicyGuider const &b) {
+    return (a.m_pp == b.m_pp);
+  }
+  
+  friend inline bool operator<(WHeapPolicyGuider const &a, WHeapPolicyGuider const &b) {
+    return std::less<type_policy_base*>()(a.m_pp, b.m_pp);
+  }
+};
+
+template <typename _Ax>
+inline SHeapPolicyGuider<_Ax>::SHeapPolicyGuider(WHeapPolicyGuider<_Ax> const &r)
+  : PolicyGuider(r.m_pp)
+{
+  if (m_pp == 0 || !p_policy(m_pp)->add_ref_lock()) {
+    boost::throw_exception(boost::bad_weak_ptr());
+  }
+}
+
+template <typename _Ax>
+inline SHeapPolicyGuider<_Ax>::SHeapPolicyGuider(
+  WHeapPolicyGuider<_Ax> const & r,
+  nsp_boost::detail::sp_nothrow_tag )
+  : PolicyGuider( r.m_pp )
+{
+  if( m_pp != 0 && !p_policy(m_pp)->add_ref_lock() )
+  {
+    m_pp = 0;
+//    pAdj_ = 0;
+  }
+}
 
 }
 }

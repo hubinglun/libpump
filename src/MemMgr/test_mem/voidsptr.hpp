@@ -49,23 +49,7 @@ public:
   size_t data_;
 };
 
-class VoidSPtr;
-
 class VoidWPtr;
-
-bool operator==(VoidSPtr const &p, boost::detail::sp_nullptr_t) BOOST_NOEXCEPT;
-
-bool operator==(boost::detail::sp_nullptr_t, VoidSPtr const &p) BOOST_NOEXCEPT;
-
-bool operator!=(VoidSPtr const &p, boost::detail::sp_nullptr_t) BOOST_NOEXCEPT;
-
-bool operator!=(boost::detail::sp_nullptr_t, VoidSPtr const &p) BOOST_NOEXCEPT;
-
-bool operator==(VoidSPtr const &a, VoidSPtr const &b) BOOST_NOEXCEPT;
-
-bool operator!=(VoidSPtr const &a, VoidSPtr const &b) BOOST_NOEXCEPT;
-
-std::ostream &operator<<(std::ostream &os, VoidSPtr const &p);
 
 class VoidSPtr {
 private:
@@ -100,14 +84,7 @@ public:
     m_policy(m_block) {
   }
 
-//  VoidSPtr(const VoidWPtr &r, boost::detail::sp_nothrow_tag)
-//    : /*m_pParent(0),*/
-//      m_block(),
-//      m_policy(r.m_policy, boost::detail::sp_nothrow_tag()) {
-//    if(!m_policy.empty()){
-//      m_block = r.m_block;
-//    }
-//  }
+  VoidSPtr(const VoidWPtr &r, boost::detail::sp_nothrow_tag);
   
   explicit VoidSPtr(const size_t n/*, VoidSPtr *parent = 0*/) BOOST_NOEXCEPT
     : /*m_pParent(parent),*/
@@ -355,57 +332,6 @@ std::ostream &operator<<(std::ostream &os, VoidSPtr const &p) {
   os << ss.str();
   return os;
 }
-
-////////////////////////////////////////////////
-//                  VoidWPtr
-////////////////////////////////////////////////
-
-//VoidSPtr VoidWPtr::lock_raw() const BOOST_NOEXCEPT {
-//  return VoidSPtr(*this, boost::detail::sp_nothrow_tag());
-//}
-
-//VoidWPtr::VoidWPtr(VoidSPtr const &r) BOOST_NOEXCEPT
-//  : m_block(r.m_block),
-//    m_policy(r.m_policy) {
-//}
-//
-//VoidWPtr & VoidWPtr::operator=(VoidSPtr const &r) BOOST_NOEXCEPT {
-//  m_block = r.m_block;
-//  m_policy = r.m_policy;
-//  return *this;
-//}
-//
-//bool operator==(VoidWPtr const &a, VoidWPtr const &b) BOOST_NOEXCEPT {
-//  VoidSPtr sp_a = a.lock_raw();
-//  VoidSPtr sp_b = b.lock_raw();
-//  return (sp_a == sp_b);
-//}
-//
-//bool operator!=(VoidWPtr const &a, VoidWPtr const &b) BOOST_NOEXCEPT {
-//  VoidSPtr sp_a = a.lock_raw();
-//  VoidSPtr sp_b = b.lock_raw();
-//  return (sp_a != sp_b);
-//}
-//
-//bool operator==(VoidWPtr const &a, nullptr_t) BOOST_NOEXCEPT {
-//  VoidSPtr sp_a = a.lock_raw();
-//  return (sp_a == nullptr);
-//}
-//
-//bool operator!=(VoidWPtr const &a, nullptr_t) BOOST_NOEXCEPT {
-//  VoidSPtr sp_a = a.lock_raw();
-//  return (sp_a != nullptr);
-//}
-//
-//bool operator==(nullptr_t, VoidWPtr const &a) BOOST_NOEXCEPT {
-//  VoidSPtr sp_a = a.lock_raw();
-//  return (sp_a == nullptr);
-//}
-//
-//bool operator!=(nullptr_t, VoidWPtr const &a) BOOST_NOEXCEPT {
-//  VoidSPtr sp_a = a.lock_raw();
-//  return (sp_a != nullptr);
-//}
 
 }
 }
