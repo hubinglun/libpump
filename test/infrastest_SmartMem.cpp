@@ -14,6 +14,8 @@
 #include "MemMgr/test_mem/policy.hpp"
 #include "MemMgr/test_mem/voidsptr.hpp"
 #include "MemMgr/test_mem/voidwptr.hpp"
+#include "MemMgr/test_mem/sharedptr.hpp"
+#include "MemMgr/test_mem/weakptr.hpp"
 
 #include "Logger.h"
 
@@ -204,9 +206,29 @@ void smoke_test2() {
 //    </>VoidSPtr 线程安全冒烟测试</>
 /////////////////////////////////////
 
+bool test_SharedPtr() {
+  SharedPtr<int> sp_0(XXX);
+  sp_0.construct(2);
+  LOG_ASSERT(sp_0.ref()==2) << "[ failed ] 1-1";
+  return true;
+}
+
+bool test_WeakPtr(){
+  SharedPtr<int> sp_0(XXX);
+  sp_0.construct(2);
+  WeakPtr<int> wp_0;
+  LOG_ASSERT(wp_0.expired()) << "[ failed ] 1-1";
+  wp_0 = sp_0;
+  LOG_ASSERT(!wp_0.expired()) << "[ failed ] 1-2";
+  return true;
+}
+
 int main() {
   LOG_IF(INFO, test_Block()) << "[ OK ] test_Block()";
   LOG_IF(INFO, test_voidwptr()) << "[ OK ] test_voidwptr()";
+  LOG_IF(INFO, test_SharedPtr()) << "[ OK ] test_SharedPtr()";
+  LOG_IF(INFO, test_WeakPtr()) << "[ OK ] test_WeakPtr()";
+  
 //  while(1) {
 //    LOG_IF(INFO, test_VoidSPtr_1()) << "[ OK ] test_VoidSPtr()";
 //  }
