@@ -73,7 +73,8 @@ public:
       block_type_(block_type),
       p_(0) {}
 
-protected:
+//protected: // FIXME 应该是protected
+public:
   void reset() {
     block_segsz_ = (0);
     block_ctime_ = (0);
@@ -99,14 +100,22 @@ public:
     return (static_cast< T * >(p_));
   }
   
-  template<typename T>
-  T &ref() {
-    return *(this->r_get<T>());
+  void *get() const {
+    if (p_ == 0) {
+      // FIXME 抛出异常, 或者其他识别错误的方案
+      throw 1;
+    }
+    return (static_cast< void * >(p_));
   }
   
-  template<typename T>
+  template< typename T >
+  T &ref() {
+    return *(this->r_get< T >());
+  }
+  
+  template< typename T >
   T &c_ref() const {
-    return *(this->get<T>());
+    return *(this->get< T >());
   }
   
   bool empty() {
@@ -223,6 +232,10 @@ public:
   template<typename T>
   T *get() const {
     return (this->empty() ? 0 : m_px->get<T>());
+  }
+  
+  void *get() const {
+    return (this->empty() ? 0 : m_px->get());
   }
   
   template<typename T>

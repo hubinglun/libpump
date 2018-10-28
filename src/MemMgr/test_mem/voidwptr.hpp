@@ -68,7 +68,7 @@ public:
     return *this;
   }
 
-#endif
+#endif //!defined( BOOST_NO_CXX11_RVALUE_REFERENCES )
 
 //
 //  The "obvious" converting constructor implementation:
@@ -131,9 +131,9 @@ public:
     this_type(static_cast< VoidWPtr && >( r )).swap(*this);
     return *this;
   }
+  
+#endif //!defined( BOOST_NO_CXX11_RVALUE_REFERENCES )
 
-
-#endif
   VoidWPtr(VoidSPtr const &r) BOOST_NOEXCEPT
     : m_block(r.m_block),
       m_policy(r.m_policy) {

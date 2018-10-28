@@ -86,7 +86,7 @@ public:
 
   VoidSPtr(const VoidWPtr &r, boost::detail::sp_nothrow_tag);
   
-  explicit VoidSPtr(const size_t n/*, VoidSPtr *parent = 0*/) BOOST_NOEXCEPT
+  explicit VoidSPtr(size_t n/*, VoidSPtr *parent = 0*/) BOOST_NOEXCEPT
     : /*m_pParent(parent),*/
     m_block(n),
     m_policy(m_block) {
@@ -223,7 +223,7 @@ public:
   }
   
   void *get() const {
-    return (m_block.get<void *>());
+    return (m_block.get());
   }
 
 protected:
@@ -232,11 +232,11 @@ protected:
   template<class Y> friend
   class WeakPtr;
 
-protected:
-//public:
+//protected: // FIXME 应该是protected
+public:
   template<class T>
-  T *rget() {
-    return m_block.rget<T>();
+  T *r_get() {
+    return m_block.r_get<T>();
   }
 
 public:
