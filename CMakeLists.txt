@@ -11,6 +11,7 @@ aux_source_directory(./src/PWatcher DIRSRCS)
 aux_source_directory(./src/PWatcher/PWFdBase DIRSRCS)
 aux_source_directory(./src/Event DIRSRCS)
 aux_source_directory(src/MemMgr DIRSRCS)
+aux_source_directory(src/MemMgr/test_mem DIRSRCS)
 set(SRC ./src/ src/ptl/Buffer/ src/PWatcher/PWFdBase/ ${DIRSRCS})
 message(">>> SRC: ${SRC}")
 
@@ -61,3 +62,5 @@ target_link_libraries(infrastest_Thread ${all_libs} pump)
 
 add_executable(infrastest_SmartPtr test/infrastest_SmartPtr.cpp)
 target_link_libraries(infrastest_SmartPtr ${all_libs} pump)
+add_executable(infrastest_SmartMem test/infrastest_SmartMem.cpp)
+target_link_libraries(infrastest_SmartMem ${all_libs} pump)

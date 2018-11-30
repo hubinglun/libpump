@@ -51,11 +51,11 @@ class Pump
 public:
   Pump();
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   
   Pump(PtrArg pIn, PtrArg pOut, PumpType emType);
 
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
   
   virtual ~Pump() {}
   
@@ -103,7 +103,7 @@ protected:
   //! 标志 Pump 当前的运行状态
   enum PumpState m_emState;
   const enum PumpType m_emType;
-  PtrThread m_pThread;
+//  PtrThread m_pThread;
   /**
    * @var PtrArg m_argIn
    * @brief PWatcher 对象的输入参数
@@ -126,11 +126,11 @@ class AsyncPump
 public:
   AsyncPump();
   
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   
   AsyncPump(PtrArg pIn, PtrArg pOut);
 
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
   
   virtual ~AsyncPump();
 
@@ -160,11 +160,11 @@ public:
   
   PWitness();
 
-#ifdef _TEST_LEVEL_INFO
+#ifdef _TEST_LEVEL_DEBUG
   
   PWitness(PtrArg pIn, PtrArg pOut);
 
-#endif //_TEST_LEVEL_INFO
+#endif //_TEST_LEVEL_DEBUG
   
   ~PWitness();
   
