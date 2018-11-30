@@ -15,7 +15,6 @@
 
 #include "block.hpp"
 #include "policy.hpp"
-#include "voidsptr.hpp"
 #include "Logger.h"
 
 namespace nsp_std = ::std;
@@ -23,6 +22,8 @@ namespace nsp_boost = ::boost;
 
 namespace Pump {
 namespace SmartMem {
+
+class VoidSPtr;
 
 bool operator==(VoidSPtr const &p, boost::detail::sp_nullptr_t) BOOST_NOEXCEPT;
 
@@ -134,16 +135,16 @@ public:
   
 #endif //!defined( BOOST_NO_CXX11_RVALUE_REFERENCES )
 
-  VoidWPtr(VoidSPtr const &r) BOOST_NOEXCEPT
-    : m_block(r.m_block),
+  VoidWPtr(VoidSPtr const &r) BOOST_NOEXCEPT;
+  /*  : m_block(r.m_block),
       m_policy(r.m_policy) {
-  }
+  }*/
   
-  VoidWPtr & operator=(VoidSPtr const &r) BOOST_NOEXCEPT {
+  VoidWPtr & operator=(VoidSPtr const &r) BOOST_NOEXCEPT;/* {
     m_block = r.m_block;
     m_policy = r.m_policy;
     return *this;
-  }
+  }*/
 
 //  template<class Y>
 //#if !defined( BOOST_SP_NO_SP_CONVERTIBLE )
@@ -160,9 +161,9 @@ public:
 //    boost::detail::sp_assert_convertible< Y, T >();
 //  }
   
-  VoidSPtr lock_raw() const BOOST_NOEXCEPT {
+  VoidSPtr lock_raw() const BOOST_NOEXCEPT; /*{
     return VoidSPtr(*this, boost::detail::sp_nothrow_tag());
-  }
+  }*/
   
   long use_count() const BOOST_NOEXCEPT {
     return m_policy.use_count();
@@ -219,51 +220,19 @@ protected:
   WHeapPolicyGuider<> m_policy; // reference counter
 };
 
-bool operator==(VoidWPtr const &a, VoidWPtr const &b) BOOST_NOEXCEPT {
-  VoidSPtr sp_a = a.lock_raw();
-  VoidSPtr sp_b = b.lock_raw();
-  return (sp_a == sp_b);
-}
-
-bool operator!=(VoidWPtr const &a, VoidWPtr const &b) BOOST_NOEXCEPT {
-  VoidSPtr sp_a = a.lock_raw();
-  VoidSPtr sp_b = b.lock_raw();
-  return (sp_a != sp_b);
-}
-
-bool operator==(VoidWPtr const &a, nullptr_t) BOOST_NOEXCEPT {
-  VoidSPtr sp_a = a.lock_raw();
-  return (sp_a == nullptr);
-}
-
-bool operator!=(VoidWPtr const &a, nullptr_t) BOOST_NOEXCEPT {
-  VoidSPtr sp_a = a.lock_raw();
-  return (sp_a != nullptr);
-}
-
-bool operator==(nullptr_t, VoidWPtr const &a) BOOST_NOEXCEPT {
-  VoidSPtr sp_a = a.lock_raw();
-  return (sp_a == nullptr);
-}
-
-bool operator!=(nullptr_t, VoidWPtr const &a) BOOST_NOEXCEPT {
-  VoidSPtr sp_a = a.lock_raw();
-  return (sp_a != nullptr);
-}
-
 ////////////////////////////////////////////////
 //                  VoidSPtr
 ////////////////////////////////////////////////
-
-VoidSPtr::VoidSPtr(const VoidWPtr &r, boost::detail::sp_nothrow_tag)
-  : /*m_pParent(0),*/
-  m_block(),
-  m_policy(r.m_policy, boost::detail::sp_nothrow_tag())
-{
-  if(!m_policy.empty()){
-    m_block = r.m_block;
-  }
-}
+//
+//VoidSPtr::VoidSPtr(const VoidWPtr &r, boost::detail::sp_nothrow_tag)
+//  : /*m_pParent(0),*/
+//  m_block(),
+//  m_policy(r.m_policy, boost::detail::sp_nothrow_tag())
+//{
+//  if(!m_policy.empty()){
+//    m_block = r.m_block;
+//  }
+//}
 
 }
 }

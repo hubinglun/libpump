@@ -15,6 +15,7 @@
 
 #include "block.hpp"
 #include "policy.hpp"
+#include "voidwptr.hpp"
 #include "Logger.h"
 
 namespace nsp_std = ::std;
@@ -54,73 +55,75 @@ class VoidWPtr;
 class VoidSPtr {
 private:
   typedef VoidSPtr this_type;
+  typedef VoidWPtr this_weak_t;
 public:
   VoidSPtr() BOOST_NOEXCEPT
-    : /*m_pParent(0),*/
-    m_block(),
-    m_policy() {
+    : m_block(),
+      m_policy(),
+      m_wpParent() {
     
   }
 
 #ifndef BOOST_NO_CXX11_NULLPTR
   
-  VoidSPtr(boost::detail::sp_nullptr_t/*, VoidSPtr *const parent = 0*/) BOOST_NOEXCEPT
-    : /*m_pParent(parent),*/
-//    m_iCapacity(0),
-//    m_iSize(0),
-//    m_px(0),
-    m_block(),
-    m_policy() {
+  VoidSPtr(boost::detail::sp_nullptr_t) BOOST_NOEXCEPT
+    : m_block(),
+      m_policy(),
+      m_wpParent() {
     
   }
 
 #endif //BOOST_NO_CXX11_NULLPTR
   
   template<class A = std::allocator<char> >
-  explicit VoidSPtr(size_t n, A &a/*, VoidSPtr *parent = 0*/) BOOST_NOEXCEPT
-    : /*m_pParent(parent),*/
-    
-    m_block(n, a),
-    m_policy(m_block) {
+  explicit VoidSPtr(size_t n, A &a, VoidWPtr parent = VoidWPtr()) BOOST_NOEXCEPT
+    : m_block(n, a),
+      m_policy(m_block),
+      m_wpParent(parent) {
   }
-
-  VoidSPtr(const VoidWPtr &r, boost::detail::sp_nothrow_tag);
   
-  explicit VoidSPtr(size_t n/*, VoidSPtr *parent = 0*/) BOOST_NOEXCEPT
-    : /*m_pParent(parent),*/
-    m_block(n),
-    m_policy(m_block) {
+  VoidSPtr(const VoidWPtr &r, boost::detail::sp_nothrow_tag, VoidWPtr parent = VoidWPtr())
+    : m_block(),
+      m_policy(r.m_policy, boost::detail::sp_nothrow_tag()) ,
+      m_wpParent(parent) {
+    if (!m_policy.empty()) {
+      m_block = r.m_block;
+    }
+  }
+  
+  explicit VoidSPtr(size_t n, VoidWPtr parent = VoidWPtr()) BOOST_NOEXCEPT
+    : m_block(n),
+      m_policy(m_block),
+      m_wpParent(parent) {
   }
   
   template<class A = std::allocator<char>, class D>
-  explicit VoidSPtr(size_t n, A &a, D d/*, VoidSPtr *parent = 0*/) BOOST_NOEXCEPT
-    : /*m_pParent(parent),*/
-    m_block(n, a),
-    m_policy(m_block, d) {
+  explicit VoidSPtr(size_t n, A &a, D d, VoidWPtr parent = VoidWPtr()) BOOST_NOEXCEPT
+    : m_block(n, a),
+      m_policy(m_block, d),
+      m_wpParent(parent) {
   }
   
   template<class D>
-  explicit VoidSPtr(size_t n, nsp_std::nullptr_t, D d/*, VoidSPtr *parent = 0*/) BOOST_NOEXCEPT
-    : /*m_pParent(parent),*/
-    m_block(n),
-    m_policy(m_block, d) {
+  explicit VoidSPtr(size_t n, nsp_std::nullptr_t, D d, VoidWPtr parent = VoidWPtr()) BOOST_NOEXCEPT
+    : m_block(n),
+      m_policy(m_block, d),
+      m_wpParent(parent) {
   }
   
-  VoidSPtr(VoidSPtr const &r/*, VoidSPtr *parent = 0*/) BOOST_NOEXCEPT
-    : /*m_pParent(parent),*/
-    m_block(r.m_block),
-    m_policy(r.m_policy) {
+  VoidSPtr(VoidSPtr const &r) BOOST_NOEXCEPT
+    : m_block(r.m_block),
+      m_policy(r.m_policy),
+      m_wpParent(r.m_wpParent) {
   }
 
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 
-//  VoidSPtr(VoidSPtr &&r/*, VoidSPtr *parent = 0*/) BOOST_NOEXCEPT
-//    : /*m_pParent(parent),*/
-//      m_block(r.m_block),
-//      m_policy() {
-//    m_policy.swap(r.m_policy);
-//    r.m_block.m_px = nullptr;
-//  }
+  VoidSPtr(VoidSPtr &&r) BOOST_NOEXCEPT
+    : m_block(r.m_block),
+      m_policy(r.m_policy),
+      m_wpParent(r.m_wpParent) {
+  }
 
 #endif //BOOST_NO_CXX11_RVALUE_REFERENCES
   
@@ -198,6 +201,7 @@ public:
   void swap(VoidSPtr &r) BOOST_NOEXCEPT {
     m_block.swap(r.m_block);
     m_policy.swap(r.m_policy);
+    m_wpParent.swap(r.m_wpParent);
   }
   
   long use_count() const // nothrow
@@ -213,9 +217,9 @@ public:
     return m_block.relative(r.m_block);
   }
 
-//  VoidSPtr *const parent() {
-//    return m_pParent;
-//  }
+  VoidWPtr parent() {
+    return m_wpParent;
+  }
   
   template<class T>
   T *get() const {
@@ -240,19 +244,13 @@ public:
   }
 
 public:
-  // FIXME 需要一个功能更加强大的元素访问接口,应该能支持多维数组
+// FIXME [NORMAL] 需要一个功能更加强大的元素访问接口,应该能支持多维数组
 //  template<class T>
 //  T &operator[](size_t indx) {
 //
 //  }
 
 protected:
-  /**
-   * FIXME 研究使用VoidWPtr替换 ???
-   * @var m_pParent [试用阶段]
-   * @brief 父指针对象, 父指针托管的内存成员中包含本指针托管的内存
-   */
-  
   /**
    * @var m_block
    * @brief 托管内存对象
@@ -263,6 +261,12 @@ protected:
    * @brief 托管策略对象
    */
   SHeapPolicyGuider<> m_policy;
+  /**
+   * FIXME [FIXED] 研究使用VoidWPtr替换
+   * @var m_pParent [试用阶段]
+   * @brief 父指针对象, 父指针托管的内存成员中包含本指针托管的内存
+   */
+  this_weak_t m_wpParent;
 };
 
 //template<class E, class T, class Y>
@@ -331,6 +335,57 @@ std::ostream &operator<<(std::ostream &os, VoidSPtr const &p) {
   ss << "\n]" << nsp_std::endl;
   os << ss.str();
   return os;
+}
+
+////////////////////////////////////////////////
+//                  VoidWPtr
+////////////////////////////////////////////////
+
+VoidWPtr::VoidWPtr(VoidSPtr const &r) BOOST_NOEXCEPT
+  : m_block(r.m_block),
+    m_policy(r.m_policy) {
+}
+
+VoidWPtr &VoidWPtr::operator=(VoidSPtr const &r) BOOST_NOEXCEPT {
+  m_block = r.m_block;
+  m_policy = r.m_policy;
+  return *this;
+}
+
+VoidSPtr VoidWPtr::lock_raw() const BOOST_NOEXCEPT {
+  return VoidSPtr(*this, boost::detail::sp_nothrow_tag());
+}
+
+bool operator==(VoidWPtr const &a, VoidWPtr const &b) BOOST_NOEXCEPT {
+  VoidSPtr sp_a = a.lock_raw();
+  VoidSPtr sp_b = b.lock_raw();
+  return (sp_a == sp_b);
+}
+
+bool operator!=(VoidWPtr const &a, VoidWPtr const &b) BOOST_NOEXCEPT {
+  VoidSPtr sp_a = a.lock_raw();
+  VoidSPtr sp_b = b.lock_raw();
+  return (sp_a != sp_b);
+}
+
+bool operator==(VoidWPtr const &a, nullptr_t) BOOST_NOEXCEPT {
+  VoidSPtr sp_a = a.lock_raw();
+  return (sp_a == nullptr);
+}
+
+bool operator!=(VoidWPtr const &a, nullptr_t) BOOST_NOEXCEPT {
+  VoidSPtr sp_a = a.lock_raw();
+  return (sp_a != nullptr);
+}
+
+bool operator==(nullptr_t, VoidWPtr const &a) BOOST_NOEXCEPT {
+  VoidSPtr sp_a = a.lock_raw();
+  return (sp_a == nullptr);
+}
+
+bool operator!=(nullptr_t, VoidWPtr const &a) BOOST_NOEXCEPT {
+  VoidSPtr sp_a = a.lock_raw();
+  return (sp_a != nullptr);
 }
 
 }
