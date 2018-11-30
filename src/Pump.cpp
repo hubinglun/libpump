@@ -22,9 +22,9 @@ Pump::Pump()
 Pump::Pump(PtrArg pIn, PtrArg pOut, PumpType emType)
   : m_emState(PUMPSTATE_NEW),
     m_emType(emType),
-    m_pThread((emType == PUMPTYPE_ASYNC)
-              ? nsp_boost::make_shared<PThread>()
-              : PtrThread()),
+//    m_pThread((emType == PUMPTYPE_ASYNC)
+//              ? nsp_boost::make_shared<PThread>()
+//              : PtrThread()),
     m_pArgIn(pIn),
     m_pArgOut(pOut) {
   

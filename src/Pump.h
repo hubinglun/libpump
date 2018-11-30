@@ -103,7 +103,7 @@ protected:
   //! 标志 Pump 当前的运行状态
   enum PumpState m_emState;
   const enum PumpType m_emType;
-  PtrThread m_pThread;
+//  PtrThread m_pThread;
   /**
    * @var PtrArg m_argIn
    * @brief PWatcher 对象的输入参数
